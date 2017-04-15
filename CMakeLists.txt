@@ -11,12 +11,21 @@ include_directories(
         third_party/glm
 )
 
-link_directories(third_party/glfw/lib/macos)
+if (${APPLE})
+    link_directories(third_party/glfw/lib/macos)
+elseif(${WIN32})
+    link_directories(third_party/glfw/lib/win)
+
+    include_directories(third_party/glew/include)
+    link_directories(third_party/glew/lib/)
+    link_libraries(glew32)
+    add_definitions(-DGLEW_STATIC)
+endif()
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
 add_executable(opengl ${SOURCE_FILES})
 target_link_libraries(
         opengl
-        glfw
+        glfw3
         ${OPENGL_LIBRARY}
 )

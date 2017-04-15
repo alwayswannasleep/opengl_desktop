@@ -1,8 +1,12 @@
+#ifdef APPLE
 #include <OpenGL/gl3.h>
+#else
+#include <GL/glew.h>
+#endif
+
 #include <iostream>
 #include "GLFW/glfw3.h"
 #include <thread>
-#include "glm.hpp"
 
 void renderFrame();
 
@@ -33,9 +37,17 @@ int main() {
     int width;
     int height;
     glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-
     glfwMakeContextCurrent(window);
+
+#ifndef APPLE
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Error initializing glew. Exiting.\n";
+        return -1;
+    }
+#endif
+
+    glViewport(0, 0, width, height);
     glfwSetWindowSizeCallback(window, onWindowSizeChanged);
 
     glEnable(GL_DEPTH_TEST);
