@@ -1,10 +1,18 @@
+#include <OpenGL/gl3.h>
 #include <iostream>
 #include "GLFW/glfw3.h"
 #include <thread>
+#include "glm.hpp"
+
+void renderFrame();
 
 long long getCurrentTime() {
     using namespace std::chrono;
     return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+void onWindowSizeChanged(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
 }
 
 int main() {
@@ -21,23 +29,27 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    glViewport(0, 0, 800, 600);
+
+    int width;
+    int height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 
     glfwMakeContextCurrent(window);
-    glfwSetWindowSizeCallback(window, [](auto window, auto width, auto height) {
-        glViewport(0, 0, width, height);
-    });
+    glfwSetWindowSizeCallback(window, onWindowSizeChanged);
 
-    glfwSetWindowIconifyCallback(window, [](auto, auto iconified) {
-        if (iconified) {
-            glfwWaitEvents();
-        }
-    });
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+
+    glDepthFunc(GL_LEQUAL);
+    glDepthRange(1, 100);
 
     int fps = 0;
     auto start = getCurrentTime();
     while (!glfwWindowShouldClose(window)) {
         auto frameStart = getCurrentTime();
+
+        renderFrame();
 
         glfwPollEvents();
         glfwSwapBuffers(window);
@@ -59,4 +71,9 @@ int main() {
 
     glfwTerminate();
     return 0;
+}
+
+void renderFrame() {
+    glClearColor(0.4f, 0.4f, 0.4f, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
