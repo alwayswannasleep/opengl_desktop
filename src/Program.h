@@ -14,6 +14,10 @@ public:
 public:
     void use();
 
+    GLint getUniformLocation(const char *name);
+
+    GLint getAttributeLocation(const char *name);
+
 private:
     GLuint compileShader(GLenum shaderType, const char *source);
 

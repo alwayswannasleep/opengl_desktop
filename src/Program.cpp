@@ -1,7 +1,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include "program.h"
+#include "Program.h"
 
 Program::Program(const char *vertexShaderPath, const char *fragmentShaderPath) {
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, loadShaderSourceFromFile(vertexShaderPath));
@@ -65,4 +65,12 @@ const char *Program::loadShaderSourceFromFile(const char *path) {
     }
 
     return source.c_str();
+}
+
+GLint Program::getUniformLocation(const char *name) {
+    return glGetUniformLocation(programId, name);
+}
+
+GLint Program::getAttributeLocation(const char *name) {
+    return glGetAttribLocation(programId, name);
 }

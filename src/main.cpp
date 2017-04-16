@@ -9,10 +9,14 @@
 #include <iostream>
 #include "GLFW/glfw3.h"
 #include <thread>
-#include "program.h"
+#include <ext.hpp>
+#include "Program.h"
+#include "Camera.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
+
+Camera camera;
 
 void renderFrame(Program i, GLuint i1);
 
@@ -100,6 +104,9 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    camera.setPosition({-5, 0, 4});
+    camera.setTarget({0, 0, -1});
+
     int fps = 0;
     auto start = getCurrentTime();
     while (!glfwWindowShouldClose(window)) {
@@ -138,7 +145,15 @@ void renderFrame(Program program, GLuint vao) {
 
     program.use();
 
+
+    glm::mat4 translate;
+    glm::translate(translate, glm::vec3(0, 0, -2));
+
     glBindVertexArray(vao);
+    glm::mat4 perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
+    glUniformMatrix4fv(program.getUniformLocation("viewMatrix"), 1, GL_FALSE,
+                       glm::value_ptr(perspective * camera.getViewMatrix()));
+    glUniformMatrix4fv(program.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(translate));
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
