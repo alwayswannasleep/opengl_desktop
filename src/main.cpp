@@ -9,11 +9,12 @@
 #include <iostream>
 #include "GLFW/glfw3.h"
 #include <thread>
+#include "program.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
 
-void renderFrame(GLuint i, GLuint i1);
+void renderFrame(Program i, GLuint i1);
 
 long long getCurrentTime() {
     using namespace std::chrono;
@@ -76,56 +77,7 @@ int main() {
             1, 2, 3    // Second Triangle
     };
 
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    const GLchar *source = "#version 330 core\n"
-            "  \n"
-            "layout (location = 0) in vec3 position;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-            "}";
-
-    glShaderSource(vertexShader, 1, &source, NULL);
-    glCompileShader(vertexShader);
-    GLint success;
-    GLchar infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    source = "#version 330 core\n"
-            "\n"
-            "out vec4 color;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "    color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-            "} ";
-
-    glShaderSource(fragmentShader, 1, &source, NULL);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    auto program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(program, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    glUseProgram(program);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Program program("../shaders/vertex_shader.glsl", "../shaders/fragment_shader.glsl");
 
     GLuint vaoId;
     glGenVertexArrays(1, &vaoId);
@@ -147,9 +99,6 @@ int main() {
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     int fps = 0;
     auto start = getCurrentTime();
@@ -183,11 +132,12 @@ int main() {
     return 0;
 }
 
-void renderFrame(GLuint program, GLuint vao) {
+void renderFrame(Program program, GLuint vao) {
     glClearColor(0.4f, 0.4f, 0.4f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(program);
+    program.use();
+
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
