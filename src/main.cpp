@@ -1,11 +1,4 @@
-#ifdef APPLE
-#include <OpenGL/gl3.h>
-#else
-
-#include <GL/glew.h>
-
-#endif
-
+#include "glwrapper.h"
 #include <iostream>
 #include "GLFW/glfw3.h"
 #include <thread>
@@ -50,7 +43,7 @@ int main() {
     glfwGetFramebufferSize(window, &width, &height);
     glfwMakeContextCurrent(window);
 
-#ifndef APPLE
+#ifndef __APPLE__
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         std::cerr << "Error initializing glew. Exiting.\n";

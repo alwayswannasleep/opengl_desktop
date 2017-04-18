@@ -1,7 +1,7 @@
 #ifndef OPENGL_PROGRAM_H
 #define OPENGL_PROGRAM_H
 
-#include "Gl/glew.h"
+#include "glwrapper.h"
 
 class Program {
 
