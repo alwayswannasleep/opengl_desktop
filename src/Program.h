@@ -2,6 +2,7 @@
 #define OPENGL_PROGRAM_H
 
 #include "Gl/glew.h"
+#include "string"
 
 class Program {
 
@@ -21,7 +22,7 @@ public:
 private:
     GLuint compileShader(GLenum shaderType, const char *source);
 
-    const char *loadShaderSourceFromFile(const char *path);
+    std::string loadShaderSourceFromFile(const char *path);
 
 private:
     GLuint programId;

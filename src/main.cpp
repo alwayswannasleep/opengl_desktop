@@ -12,13 +12,16 @@
 #include <ext.hpp>
 #include "Program.h"
 #include "Camera.h"
+#include "actors/Actor.h"
+#include "actors/Cube.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
 
 Camera camera;
+glm::mat4 perspective;
 
-void renderFrame(Program i, GLuint i1);
+void renderFrame(Program i, GLuint i1, Actor *pActor);
 
 long long getCurrentTime() {
     using namespace std::chrono;
@@ -107,12 +110,18 @@ int main() {
     camera.setPosition({-5, 0, 4});
     camera.setTarget({0, 0, -1});
 
+    Actor *actor = new Cube();
+    actor->setPosition({0, 0, -2});
+    actor->setScale(5, 5, 5);
+
+    perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
+
     int fps = 0;
     auto start = getCurrentTime();
     while (!glfwWindowShouldClose(window)) {
         auto frameStart = getCurrentTime();
 
-        renderFrame(program, vaoId);
+        renderFrame(program, vaoId, actor);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
@@ -139,18 +148,19 @@ int main() {
     return 0;
 }
 
-void renderFrame(Program program, GLuint vao) {
+void renderFrame(Program program, GLuint vao, Actor *pActor) {
     glClearColor(0.4f, 0.4f, 0.4f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    program.use();
+//    pActor->update(perspective * camera.getViewMatrix());
+//    pActor->render();
 
+    program.use();
 
     glm::mat4 translate;
     glm::translate(translate, glm::vec3(0, 0, -2));
 
     glBindVertexArray(vao);
-    glm::mat4 perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
     glUniformMatrix4fv(program.getUniformLocation("viewMatrix"), 1, GL_FALSE,
                        glm::value_ptr(perspective * camera.getViewMatrix()));
     glUniformMatrix4fv(program.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(translate));

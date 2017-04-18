@@ -4,8 +4,8 @@
 #include "Program.h"
 
 Program::Program(const char *vertexShaderPath, const char *fragmentShaderPath) {
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, loadShaderSourceFromFile(vertexShaderPath));
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, loadShaderSourceFromFile(fragmentShaderPath));
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, loadShaderSourceFromFile(vertexShaderPath).c_str());
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, loadShaderSourceFromFile(fragmentShaderPath).c_str());
 
     programId = glCreateProgram();
     glAttachShader(programId, vertexShader);
@@ -24,6 +24,9 @@ Program::Program(const char *vertexShaderPath, const char *fragmentShaderPath) {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    for (GLint error = glGetError(); error; error = glGetError()) {
+        printf_s("glError after link program (0x%x=%d)\n", error, error);
+    }
 }
 
 Program::~Program() {
@@ -32,6 +35,9 @@ Program::~Program() {
 
 void Program::use() {
     glUseProgram(programId);
+    for (GLint error = glGetError(); error; error = glGetError()) {
+        printf_s("glError after use program (0x%x=%d)\n", error, error);
+    }
 }
 
 GLuint Program::compileShader(GLenum shaderType, const char *source) {
@@ -51,20 +57,17 @@ GLuint Program::compileShader(GLenum shaderType, const char *source) {
     return id;
 }
 
-const char *Program::loadShaderSourceFromFile(const char *path) {
-    std::string source;
-    std::ifstream file(path);
-
-    file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try {
-        std::stringstream sourceStream;
-        sourceStream << file.rdbuf();
-        source = sourceStream.str();
-    } catch (std::ifstream::failure e) {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+std::string Program::loadShaderSourceFromFile(const char *path) {
+    std::string shaderCode;
+    std::ifstream shaderStream(path, std::ios::in);
+    if (shaderStream.is_open()) {
+        std::string line = "";
+        while (getline(shaderStream, line))
+            shaderCode += "\n" + line;
+        shaderStream.close();
     }
 
-    return source.c_str();
+    return shaderCode;
 }
 
 GLint Program::getUniformLocation(const char *name) {
