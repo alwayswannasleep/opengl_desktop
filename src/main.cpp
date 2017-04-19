@@ -14,7 +14,7 @@
 Camera camera;
 glm::mat4 perspective;
 
-void renderFrame(Program i, GLuint i1, Actor *pActor);
+void renderFrame(Program &i, GLuint i1, Actor *pActor);
 
 long long getCurrentTime() {
     using namespace std::chrono;
@@ -100,12 +100,13 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    camera.setPosition({-5, 0, 4});
+    camera.setPosition({0, 0, 4});
     camera.setTarget({0, 0, -1});
 
     Actor *actor = new Cube();
-    actor->setPosition({0, 0, -2});
-    actor->setScale(5, 5, 5);
+    actor->setPosition({-2, 0, -6});
+    actor->setRotation(-24, 45, 12);
+    actor->setScale(2, 1, 0.5f);
 
     perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
 
@@ -141,22 +142,23 @@ int main() {
     return 0;
 }
 
-void renderFrame(Program program, GLuint vao, Actor *pActor) {
+void renderFrame(Program &program, GLuint vao, Actor *pActor) {
     glClearColor(0.4f, 0.4f, 0.4f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//    pActor->update(perspective * camera.getViewMatrix());
-//    pActor->render();
+    auto projectionViewMatrix = perspective * camera.getViewMatrix();
+    pActor->update(projectionViewMatrix);
+    pActor->render();
 
     program.use();
-
     glm::mat4 translate;
-    glm::translate(translate, glm::vec3(0, 0, -2));
-
+    translate = glm::translate(translate, glm::vec3(2, 0, -8));
     glBindVertexArray(vao);
-    glUniformMatrix4fv(program.getUniformLocation("viewMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(perspective * camera.getViewMatrix()));
-    glUniformMatrix4fv(program.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(translate));
+    GLint location = program.getUniformLocation("modelMatrix");
+    glUniformMatrix4fv(location, 1, GL_FALSE,
+                       glm::value_ptr(projectionViewMatrix * translate));
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
     glBindVertexArray(0);
 }

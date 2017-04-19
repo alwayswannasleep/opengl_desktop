@@ -2,10 +2,12 @@
 #include "gtc/matrix_transform.hpp"
 
 Actor::Actor(const char *vertexPath, const char *fragmentPath) :
-        program(vertexPath, fragmentPath),
         rotationMatrix(1),
         scaleMatrix(1),
-        translationMatrix(1) {}
+        translationMatrix(1) {
+
+    program = new Program(vertexPath, fragmentPath);
+}
 
 Actor::~Actor() {
     for (auto actor : children) {
@@ -13,8 +15,8 @@ Actor::~Actor() {
     }
 }
 
-void Actor::update(glm::mat4 transformationMatrix) {
-    modelMatrix = transformationMatrix/* * translationMatrix * scaleMatrix * rotationMatrix*/;
+void Actor::update(glm::mat4 &transformationMatrix) {
+    modelMatrix = transformationMatrix * translationMatrix * scaleMatrix * rotationMatrix;
 
     for (auto child : children) {
         child->update(modelMatrix);
@@ -41,9 +43,9 @@ void Actor::setPosition(glm::vec3 position) {
 }
 
 void Actor::setRotation(float x, float y, float z) {
-    glm::rotate(rotationMatrix, x, {1, 0, 0});
-    glm::rotate(rotationMatrix, y, {0, 1, 0});
-    glm::rotate(rotationMatrix, z, {0, 0, 1});
+    rotationMatrix = glm::rotate(glm::mat4(1), x, {1, 0, 0});
+    rotationMatrix = glm::rotate(rotationMatrix, y, {0, 1, 0});
+    rotationMatrix = glm::rotate(rotationMatrix, z, {0, 0, 1});
 }
 
 void Actor::setScale(float x, float y, float z) {

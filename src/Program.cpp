@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include "Program.h"
+#include "logs.h"
 
 Program::Program(const char *vertexShaderPath, const char *fragmentShaderPath) {
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, loadShaderSourceFromFile(vertexShaderPath).c_str());
@@ -17,16 +18,13 @@ Program::Program(const char *vertexShaderPath, const char *fragmentShaderPath) {
     if (!success) {
         GLchar info[512];
         glGetProgramInfoLog(programId, sizeof(info), NULL, info);
-        std::cerr << "ERROR::PROGRAM LINK_FAILED\n" << info << std::endl;
+        LOGI("ERROR::PROGRAM LINK_FAILED\n%s", info);
 
         glDeleteProgram(programId);
     }
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-    for (GLint error = glGetError(); error; error = glGetError()) {
-        printf_s("glError after link program (0x%x=%d)\n", error, error);
-    }
 }
 
 Program::~Program() {
@@ -35,9 +33,6 @@ Program::~Program() {
 
 void Program::use() {
     glUseProgram(programId);
-    for (GLint error = glGetError(); error; error = glGetError()) {
-        printf_s("glError after use program (0x%x=%d)\n", error, error);
-    }
 }
 
 GLuint Program::compileShader(GLenum shaderType, const char *source) {
@@ -50,7 +45,7 @@ GLuint Program::compileShader(GLenum shaderType, const char *source) {
     if (!success) {
         GLchar info[512];
         glGetShaderInfoLog(id, sizeof(info), NULL, info);
-        std::cerr << "ERROR::SHADER COMPILE_FAILED\n" << info << std::endl;
+        LOGI("ERROR::SHADER LINK_FAILED\n%s", info);
         return 0;
     }
 

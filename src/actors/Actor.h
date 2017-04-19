@@ -1,7 +1,7 @@
 #ifndef OPENGL_ACTOR_H
 #define OPENGL_ACTOR_H
 
-#include "GL/glew.h"
+#include "../glwrapper.h"
 #include "glm.hpp"
 #include "../Program.h"
 #include <vector>
@@ -11,7 +11,7 @@ class Actor {
 public:
     ~Actor();
 
-    void update(glm::mat4 transformationMatrix);
+    void update(glm::mat4 &transformationMatrix);
 
     virtual void render();
 
@@ -34,7 +34,7 @@ protected:
 protected:
 
     GLuint vao;
-    Program program;
+    Program *program;
     glm::mat4 modelMatrix;
     std::vector<Actor *> children;
     glm::vec3 position;
