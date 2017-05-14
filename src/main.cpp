@@ -3,18 +3,22 @@
 #include "GLFW/glfw3.h"
 #include <thread>
 #include <ext.hpp>
-#include "Program.h"
 #include "Camera.h"
 #include "actors/Actor.h"
 #include "actors/Cube.h"
+#include "logs.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
+#define CAMERA_SPEED 5;
 
 Camera camera;
 glm::mat4 perspective;
+bool pressedKeys[1024];
 
-void renderFrame(Program &i, GLuint i1, Actor *pActor);
+void renderFrame(Actor *pActor);
+
+void updateMovements(long long int delta);
 
 long long getCurrentTime() {
     using namespace std::chrono;
@@ -23,6 +27,37 @@ long long getCurrentTime() {
 
 void onWindowSizeChanged(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+void onKeyPressed(GLFWwindow *window, int key, int scancode, int action, int mode) {
+    switch (key) {
+        case GLFW_KEY_ESCAPE:
+            glfwSetWindowShouldClose(window, true);
+            break;
+        default:
+            if (action == GLFW_PRESS) {
+                pressedKeys[key] = true;
+            } else if (action == GLFW_RELEASE) {
+                pressedKeys[key] = false;
+            }
+            break;
+    }
+}
+
+void onCursorPositionChanged(GLFWwindow *window, double xPos, double yPos) {
+    static double previousX = 400;
+    static double previousY = 300;
+
+    float xOffset = static_cast<float>(xPos - previousX);
+    float yOffset = static_cast<float>(previousY - yPos);
+    previousX = xPos;
+    previousY = yPos;
+
+    GLfloat sensitivity = 0.05f;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    camera.handleRotations(xOffset, yOffset);
 }
 
 int main() {
@@ -36,7 +71,8 @@ int main() {
     auto window = glfwCreateWindow(800, 600, "OpenGL test", NULL, NULL);
 
     if (window == NULL) {
-        std::cerr << "Can not create glfw window!\n";
+        LOGM("Can not create glfw window!");
+        std::cerr << "\n";
         glfwTerminate();
         return -1;
     }
@@ -49,13 +85,17 @@ int main() {
 #ifndef __APPLE__
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
-        std::cerr << "Error initializing glew. Exiting.\n";
+        LOGM("Error initializing glew. Exiting.\n");
         return -1;
     }
 #endif
 
     glViewport(0, 0, width, height);
     glfwSetFramebufferSizeCallback(window, onWindowSizeChanged);
+
+    glfwSetKeyCallback(window, onKeyPressed);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, onCursorPositionChanged);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
@@ -66,42 +106,7 @@ int main() {
     glDepthFunc(GL_LEQUAL);
     glDepthRange(1, 100);
 
-    GLfloat vertices[] = {
-            0.5f, 0.5f, 0.0f,  // Top Right
-            0.5f, -0.5f, 0.0f,  // Bottom Right
-            -0.5f, -0.5f, 0.0f,  // Bottom Left
-            -0.5f, 0.5f, 0.0f   // Top Left
-    };
-    GLuint indices[] = {  // Note that we start from 0!
-            0, 1, 3,   // First Triangle
-            1, 2, 3    // Second Triangle
-    };
-
-    Program program("../shaders/vertex_shader.glsl", "../shaders/fragment_shader.glsl");
-
-    GLuint vaoId;
-    glGenVertexArrays(1, &vaoId);
-
-    GLuint vboId;
-    glGenBuffers(1, &vboId);
-
-    GLuint eboId;
-    glGenBuffers(1, &eboId);
-
-    glBindVertexArray(vaoId);
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *) 0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    camera.setPosition({0, 0, 4});
-    camera.setTarget({0, 0, -1});
+    camera.setPosition(glm::vec3(0, 0, 4));
 
     Actor *actor = new Cube();
     actor->setPosition({-2, 0, -6});
@@ -113,11 +118,16 @@ int main() {
     int fps = 0;
     auto start = getCurrentTime();
     while (!glfwWindowShouldClose(window)) {
+        static long long previousFrame = getCurrentTime();
         auto frameStart = getCurrentTime();
-
-        renderFrame(program, vaoId, actor);
+        auto delta = frameStart - previousFrame;
+        previousFrame = frameStart;
 
         glfwPollEvents();
+
+        updateMovements(delta);
+        renderFrame(actor);
+
         glfwSwapBuffers(window);
 
         fps++;
@@ -129,12 +139,12 @@ int main() {
             start = frameEnd;
         }
 
-        auto delta = frameEnd - frameStart;
+        auto renderedBy = frameEnd - frameStart;
         long long int targetTime = (long long int) (1000.f /
                                                     (glfwGetWindowAttrib(window, GLFW_ICONIFIED) ? ICONIFIED_FPS_TARGET
                                                                                                  : DEFAULT_FPS_TARGET));
-        if (delta <= targetTime) {
-            std::this_thread::sleep_for(std::chrono::nanoseconds((targetTime - delta) * 1000));
+        if (renderedBy <= targetTime) {
+            std::this_thread::sleep_for(std::chrono::nanoseconds((targetTime - renderedBy) * 1000));
         }
     }
 
@@ -142,23 +152,38 @@ int main() {
     return 0;
 }
 
-void renderFrame(Program &program, GLuint vao, Actor *pActor) {
+void updateMovements(long long int delta) {
+    const glm::vec3 &position = camera.getPosition();
+    const glm::vec3 &front = camera.getFront();
+    const glm::vec3 &up = camera.getUp();
+
+    glm::vec3 newPosition = position;
+
+    float cameraSpeed = delta / 1000.f * CAMERA_SPEED;
+
+    if (pressedKeys[GLFW_KEY_W]) {
+        newPosition += (cameraSpeed * front);
+    }
+
+    if (pressedKeys[GLFW_KEY_S]) {
+        newPosition -= (cameraSpeed * front);
+    }
+    if (pressedKeys[GLFW_KEY_A]) {
+        newPosition -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    }
+
+    if (pressedKeys[GLFW_KEY_D]) {
+        newPosition += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    }
+
+    camera.setPosition(newPosition);
+}
+
+void renderFrame(Actor *pActor) {
     glClearColor(0.4f, 0.4f, 0.4f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto projectionViewMatrix = perspective * camera.getViewMatrix();
     pActor->update(projectionViewMatrix);
     pActor->render();
-
-    program.use();
-    glm::mat4 translate;
-    translate = glm::translate(translate, glm::vec3(2, 0, -8));
-    glBindVertexArray(vao);
-    GLint location = program.getUniformLocation("modelMatrix");
-    glUniformMatrix4fv(location, 1, GL_FALSE,
-                       glm::value_ptr(projectionViewMatrix * translate));
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
 }

@@ -13,4 +13,6 @@
 
 #endif
 
+#define LOGM(message) LOGI(message, NULL)
+
 #endif //OPENGL_LOGS_H

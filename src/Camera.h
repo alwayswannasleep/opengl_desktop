@@ -1,5 +1,4 @@
-#ifndef OPENGL_CAMERA_H
-#define OPENGL_CAMERA_H
+#pragma once
 
 #include "glm.hpp"
 
@@ -7,21 +6,27 @@ class Camera {
 
 public:
 
+    Camera();
+
     glm::mat4 getViewMatrix();
 
     void setPosition(glm::vec3 position);
 
-    void setTarget(glm::vec3 targetPosition);
-
     glm::vec3 getPosition();
 
-    glm::vec3 getTarget();
+    glm::vec3 getFront();
+
+    glm::vec3 getUp();
+
+    void setFront(glm::vec3 newFront);
+
+    void handleRotations(float yaw, float pitch);
 
 private:
     glm::vec3 position;
     glm::vec3 target;
     glm::vec3 upVector;
+
+    float yawValue;
+    float pitchValue;
 };
-
-
-#endif //OPENGL_CAMERA_H
