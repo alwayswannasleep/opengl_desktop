@@ -2,7 +2,7 @@
 #define OPENGL_ACTOR_H
 
 #include "../glwrapper.h"
-#include "glm.hpp"
+#include "glm/glm.hpp"
 #include "../Program.h"
 #include <vector>
 

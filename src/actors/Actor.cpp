@@ -1,5 +1,5 @@
 #include "Actor.h"
-#include "gtc/matrix_transform.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 Actor::Actor(const char *vertexPath, const char *fragmentPath) :
         rotationMatrix(1),

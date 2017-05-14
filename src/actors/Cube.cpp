@@ -1,4 +1,4 @@
-#include <ext.hpp>
+#include <glm/ext.hpp>
 #include "Cube.h"
 
 const GLfloat Cube::VERTICES[] = {

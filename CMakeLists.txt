@@ -8,7 +8,10 @@ find_package(OpenGL REQUIRED)
 include_directories(
         ${OPENGL_INCLUDE_DIR}
         third_party/glfw/include
-        third_party/glm
+        third_party/glm_headers
+        third_party/glm_headers/glm
+        third_party/gli_headers
+        third_party/gli_headers/gli
 )
 
 if (${APPLE})

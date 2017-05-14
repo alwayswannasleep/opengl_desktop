@@ -1,4 +1,4 @@
-#include <gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "Camera.h"
 
 Camera::Camera() : target(0, 0, -1), position(0, 0, 0), upVector(0, 1, 0), yawValue(0), pitchValue(0) {
