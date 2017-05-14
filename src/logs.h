@@ -3,13 +3,13 @@
 
 #include <stdio.h>
 
-#ifdef __APPLE__
+#ifdef OS_APPLE
 
 #define LOGI(format, ...) printf(format, __VA_ARGS__)
 
-#elif WIN_32
+#elif OS_WINDOWS
 
-#define LOGI(format, ...) printf_s(format, __VAR_ARGS__)
+#define LOGI(format, ...) printf_s(format, __VA_ARGS__)
 
 #endif
 
