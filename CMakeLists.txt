@@ -10,8 +10,7 @@ include_directories(
         third_party/glfw/include
         third_party/glm_headers
         third_party/glm_headers/glm
-        third_party/gli_headers
-        third_party/gli_headers/gli
+        third_party/devil/include
         third_party/assimp/include
 )
 
@@ -34,7 +33,10 @@ endif()
 link_directories(third_party/glfw/lib/${LIBRARIES_DIRECTORY})
 link_directories(third_party/assimp/lib/${LIBRARIES_DIRECTORY})
 
+link_directories(third_party/devil/lib/${LIBRARIES_DIRECTORY})
+
 link_libraries(assimp)
+link_libraries(IL)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.h)
 add_executable(opengl ${SOURCE_FILES})
