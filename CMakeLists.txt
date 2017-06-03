@@ -12,25 +12,29 @@ include_directories(
         third_party/glm_headers/glm
         third_party/gli_headers
         third_party/gli_headers/gli
+        third_party/assimp/include
 )
 
 if (${APPLE})
     SET(GLFW-lib glfw)
-    link_directories(third_party/glfw/lib/macos)
+    SET(LIBRARIES_DIRECTORY macos)
+
     add_definitions(-DOS_APPLE)
 elseif(${WIN32})
+    SET(LIBRARIES_DIRECTORY win)
+
     SET(GLFW-lib glfw3)
-    link_directories(third_party/glfw/lib/win)
 
     include_directories(third_party/glew/include)
     link_directories(third_party/glew/lib/)
     link_libraries(glew32)
     add_definitions(-DGLEW_STATIC -DOS_WINDOWS)
-
-    include_directories(third_party/assimp/include)
-    link_directories(third_party/assimp/lib/win)
-    link_libraries(assimp)
 endif()
+
+link_directories(third_party/glfw/lib/${LIBRARIES_DIRECTORY})
+link_directories(third_party/assimp/lib/${LIBRARIES_DIRECTORY})
+
+link_libraries(assimp)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.h)
 add_executable(opengl ${SOURCE_FILES})
