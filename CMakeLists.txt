@@ -26,6 +26,10 @@ elseif(${WIN32})
     link_directories(third_party/glew/lib/)
     link_libraries(glew32)
     add_definitions(-DGLEW_STATIC -DOS_WINDOWS)
+
+    include_directories(third_party/assimp/include)
+    link_directories(third_party/assimp/lib/win)
+    link_libraries(assimp)
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.h)

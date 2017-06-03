@@ -8,6 +8,7 @@
 #include "actors/Cube.h"
 #include "logs.h"
 #include "gli/gli.hpp"
+#include "assimp/Importer.hpp"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
