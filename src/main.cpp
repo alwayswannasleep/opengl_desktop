@@ -7,8 +7,8 @@
 #include "actors/Actor.h"
 #include "actors/Cube.h"
 #include "logs.h"
-#include "gli/gli.hpp"
 #include "assimp/Importer.hpp"
+#include "Texture.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
@@ -99,23 +99,20 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, onCursorPositionChanged);
 
-    gli::load("");
-
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
     glEnable(GL_CULL_FACE);
 
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
 
     glDepthFunc(GL_LEQUAL);
     glDepthRange(1, 100);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     camera.setPosition(glm::vec3(0, 0, 4));
 
     Actor *actor = new Cube();
-    actor->setPosition({-2, 0, -6});
-    actor->setRotation(-24, 45, 12);
-    actor->setScale(2, 1, 0.5f);
 
     perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
 

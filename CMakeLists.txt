@@ -12,6 +12,7 @@ include_directories(
         third_party/glm_headers/glm
         third_party/devil/include
         third_party/assimp/include
+        third_party/stb_image
 )
 
 if (${APPLE})
@@ -33,15 +34,15 @@ endif()
 link_directories(third_party/glfw/lib/${LIBRARIES_DIRECTORY})
 link_directories(third_party/assimp/lib/${LIBRARIES_DIRECTORY})
 
-link_directories(third_party/devil/lib/${LIBRARIES_DIRECTORY})
-
 link_libraries(assimp)
-link_libraries(IL)
+
+add_library(stb_image third_party/stb_image/stb_image.cpp)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.h)
 add_executable(opengl ${SOURCE_FILES})
 target_link_libraries(
         opengl
+        stb_image
         ${GLFW-lib}
         ${OPENGL_LIBRARY}
 )

@@ -7,7 +7,6 @@ class Cube : public Actor {
 private:
     static const GLfloat VERTICES[];
     static const GLuint INDEXES[];
-    static const float TEXTURE_COORDS[];
 
 public:
     Cube();

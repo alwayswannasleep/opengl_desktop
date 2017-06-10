@@ -3,32 +3,25 @@
 Texture::Texture() : textureId(0) {}
 
 bool Texture::load(const std::string &imagePath) {
-    auto id = ilGenImage();
-    ilBindImage(id);
+    int width;
+    int height;
+    int channels;
 
-    if (!ilLoadImage(imagePath.c_str())) {
-        return false;
-    }
-
-    return loadImage(id);
+    void *data = stbi_load(imagePath.c_str(), &width, &height, &channels, 0);
+    return loadImage(data, width, height, channels);
 }
 
-bool Texture::load(void *compressedData, ILuint length) {
-    auto id = ilGenImage();
-    ilBindImage(id);
+bool Texture::load(void *compressedData, GLuint length) {
+    int width;
+    int height;
+    int channels;
 
-    if (!ilLoadL(IL_PNG, compressedData, length)) {
-        return false;
-    }
+    void *data = stbi_load_from_memory(static_cast<stbi_uc *>(compressedData), length, &width, &height, &channels, 0);
 
-    return loadImage(id);
+    return loadImage(data, width, height, channels);
 }
 
-bool Texture::loadImage(ILuint imageId) {
-    if (!ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE)) {
-        return false;
-    }
-
+bool Texture::loadImage(void *data, int width, int height, int channels) {
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -36,19 +29,13 @@ bool Texture::loadImage(ILuint imageId) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(
-            GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL),
-            ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0,
-            static_cast<GLenum>(ilGetInteger(IL_IMAGE_FORMAT)), GL_UNSIGNED_BYTE, ilGetData()
-    );
-
-    ilBindImage(0);
-    ilDeleteImage(imageId);
+    GLenum format = channels == 4 ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
     return true;
 }
 
 void Texture::bind(GLenum textureUnit) {
     glActiveTexture(textureUnit);
-    glBindTexture(textureUnit, textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
 }

@@ -3,7 +3,7 @@
 
 #include <string>
 #include "glwrapper.h"
-#include "IL/il.h"
+#include "stb_image.h"
 
 class Texture {
 
@@ -12,13 +12,13 @@ public:
 
     bool load(const std::string &imagePath);
 
-    bool load(void *compressedData, ILuint length);
+    bool load(void *compressedData, GLuint length);
 
     void bind(GLenum textureUnit);
 
 private:
 
-    bool loadImage(ILuint imageId);
+    bool loadImage(void *data, int width, int height, int channels);
 
 private:
     GLuint textureId;
