@@ -8,7 +8,6 @@
 #include "actors/Cube.h"
 #include "logs.h"
 #include "assimp/Importer.hpp"
-#include "Texture.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
@@ -169,12 +168,21 @@ void updateMovements(long long int delta) {
     if (pressedKeys[GLFW_KEY_S]) {
         newPosition -= (cameraSpeed * front);
     }
+
     if (pressedKeys[GLFW_KEY_A]) {
         newPosition -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
     }
 
     if (pressedKeys[GLFW_KEY_D]) {
         newPosition += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    }
+
+    if (pressedKeys[GLFW_KEY_SPACE]) {
+        newPosition += (cameraSpeed * up);
+    }
+
+    if (pressedKeys[GLFW_KEY_LEFT_CONTROL]) {
+        newPosition -= (cameraSpeed * up);
     }
 
     camera.setPosition(newPosition);
