@@ -15,8 +15,6 @@ public:
 
     virtual void render();
 
-    bool isChild();
-
     void addChild(Actor &actor);
 
     void setPosition(glm::vec3 position);
@@ -27,13 +25,16 @@ public:
 
     glm::vec3 getPosition();
 
+    virtual void release();
+
 protected:
 
     Actor(const char *vertexPath, const char *fragmentPath);
 
+    bool isChild();
+
 protected:
 
-    GLuint vao;
     Program *program;
     glm::mat4 modelMatrix;
     std::vector<Actor *> children;
@@ -42,6 +43,7 @@ protected:
     glm::mat4 rotationMatrix;
     glm::mat4 scaleMatrix;
 
+    bool isNestedChild;
 };
 
 

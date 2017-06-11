@@ -8,6 +8,7 @@
 #include "actors/Cube.h"
 #include "logs.h"
 #include "assimp/Importer.hpp"
+#include "actors/Model.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
@@ -16,6 +17,7 @@
 Camera camera;
 glm::mat4 perspective;
 bool pressedKeys[1024];
+Model *model;
 
 void renderFrame(Actor *pActor);
 
@@ -104,14 +106,14 @@ int main() {
 
     glCullFace(GL_BACK);
 
-    glDepthFunc(GL_LEQUAL);
-    glDepthRange(1, 100);
-
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     camera.setPosition(glm::vec3(0, 0, 4));
 
     Actor *actor = new Cube();
+    model = new Model();
+    model->initialize("../resources/pigeon/pigeon3.obj");
+    model->setScale(10, 10, 10);
 
     perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
 
@@ -193,6 +195,10 @@ void renderFrame(Actor *pActor) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto projectionViewMatrix = perspective * camera.getViewMatrix();
-    pActor->update(projectionViewMatrix);
-    pActor->render();
+
+    model->update(projectionViewMatrix);
+    model->render();
+//
+//    pActor->update(projectionViewMatrix);
+//    pActor->render();
 }

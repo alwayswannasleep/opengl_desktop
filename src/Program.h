@@ -12,6 +12,8 @@ public:
 
     ~Program();
 
+    void release();
+
 public:
     void use();
 

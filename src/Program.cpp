@@ -72,3 +72,7 @@ GLint Program::getUniformLocation(const char *name) {
 GLint Program::getAttributeLocation(const char *name) {
     return glGetAttribLocation(programId, name);
 }
+
+void Program::release() {
+    glDeleteProgram(programId);
+}

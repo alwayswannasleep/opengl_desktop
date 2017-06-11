@@ -8,6 +8,11 @@ bool Texture::load(const std::string &imagePath) {
     int channels;
 
     void *data = stbi_load(imagePath.c_str(), &width, &height, &channels, 0);
+
+    if (data == NULL) {
+        return false;
+    }
+
     return loadImage(data, width, height, channels);
 }
 
@@ -17,6 +22,10 @@ bool Texture::load(void *compressedData, GLuint length) {
     int channels;
 
     void *data = stbi_load_from_memory(static_cast<stbi_uc *>(compressedData), length, &width, &height, &channels, 0);
+
+    if (data == NULL) {
+        return false;
+    }
 
     return loadImage(data, width, height, channels);
 }
@@ -31,6 +40,8 @@ bool Texture::loadImage(void *data, int width, int height, int channels) {
 
     GLenum format = channels == 4 ? GL_RGBA : GL_RGB;
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+    stbi_image_free(data);
 
     return true;
 }

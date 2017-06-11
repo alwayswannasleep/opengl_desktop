@@ -4,7 +4,8 @@
 Actor::Actor(const char *vertexPath, const char *fragmentPath) :
         rotationMatrix(1),
         scaleMatrix(1),
-        translationMatrix(1) {
+        translationMatrix(1),
+        isNestedChild(false) {
 
     program = new Program(vertexPath, fragmentPath);
 }
@@ -30,11 +31,12 @@ void Actor::render() {
 }
 
 bool Actor::isChild() {
-    return false;
+    return isNestedChild;
 }
 
 void Actor::addChild(Actor &actor) {
     children.push_back(&actor);
+    actor.isNestedChild = true;
 }
 
 void Actor::setPosition(glm::vec3 position) {
@@ -54,4 +56,12 @@ void Actor::setScale(float x, float y, float z) {
 
 glm::vec3 Actor::getPosition() {
     return glm::vec3();
+}
+
+void Actor::release() {
+    program->release();
+
+    for (auto child : children) {
+        child->release();
+    }
 }

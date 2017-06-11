@@ -15,6 +15,7 @@ public:
     void render() override;
 
 private:
+    GLuint vao;
     GLuint vbo;
     GLuint ebo;
 };
