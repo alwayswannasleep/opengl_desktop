@@ -110,6 +110,9 @@ int main() {
 
     camera.setPosition(glm::vec3(0, 0, 4));
 
+    glPointSize(15.f);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
     Actor *actor = new Cube();
     model = new Model();
     model->initialize("../resources/pigeon/pigeon3.obj");
