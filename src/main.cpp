@@ -19,8 +19,6 @@ glm::mat4 perspective;
 bool pressedKeys[1024];
 Model *model;
 
-void renderFrame(Actor *pActor);
-
 void updateMovements(long long int delta);
 
 long long getCurrentTime() {
@@ -110,9 +108,6 @@ int main() {
 
     camera.setPosition(glm::vec3(0, 0, 4));
 
-    glPointSize(15.f);
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
     Actor *actor = new Cube();
     model = new Model();
     model->initialize("../resources/pigeon/pigeon3.obj");
@@ -131,7 +126,14 @@ int main() {
         glfwPollEvents();
 
         updateMovements(delta);
-        renderFrame(actor);
+
+        glClearColor(0.4f, 0.4f, 0.4f, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto projectionViewMatrix = perspective * camera.getViewMatrix();
+
+        model->update(projectionViewMatrix);
+        model->render();
 
         glfwSwapBuffers(window);
 
@@ -191,17 +193,4 @@ void updateMovements(long long int delta) {
     }
 
     camera.setPosition(newPosition);
-}
-
-void renderFrame(Actor *pActor) {
-    glClearColor(0.4f, 0.4f, 0.4f, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    auto projectionViewMatrix = perspective * camera.getViewMatrix();
-
-    model->update(projectionViewMatrix);
-    model->render();
-//
-//    pActor->update(projectionViewMatrix);
-//    pActor->render();
 }
