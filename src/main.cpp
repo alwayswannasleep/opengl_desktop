@@ -5,7 +5,6 @@
 #include <glm/ext.hpp>
 #include "Camera.h"
 #include "actors/Actor.h"
-#include "actors/Cube.h"
 #include "logs.h"
 #include "assimp/Importer.hpp"
 #include "actors/Model.h"
@@ -108,10 +107,9 @@ int main() {
 
     camera.setPosition(glm::vec3(0, 0, 4));
 
-    Actor *actor = new Cube();
     model = new Model();
-    model->initialize("../resources/pigeon/pigeon3.obj");
-    model->setScale(10, 10, 10);
+    model->initialize("../resources/dragon/Dragon 2.5_fbx.fbx");
+    model->setScale(0.1f, 0.1f, 0.1f);
 
     perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
 

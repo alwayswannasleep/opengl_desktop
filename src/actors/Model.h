@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include "Actor.h"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
@@ -10,6 +11,25 @@
 #include "../glm_utils.h"
 
 class Model : public Actor {
+
+    struct Bone {
+        std::string boneName;
+        glm::mat4 bindMatrix;
+        glm::mat4 boneOffsetMatrix;
+        std::vector<Bone *> children;
+        Bone *parent;
+    };
+
+    struct Skeleton {
+        std::unordered_map<std::string, Bone *> bonesMap;
+        std::unordered_map<std::string, GLint> bonesIndexes;
+
+        void insert(Bone *bone);
+
+        Bone *findBone(std::string &boneName);
+
+        GLint getBoneIndex(std::string &boneName);
+    };
 
     struct Material {
         glm::vec3 specularColor;
@@ -34,15 +54,20 @@ class Model : public Actor {
 
 
     struct Vertex {
-        glm::vec3 position;
-        glm::vec3 normal;
-        glm::vec2 textureCoordinates;
+        glm::vec3 position = glm::vec3(0.0f);
+        glm::vec3 normal = glm::vec3(0.0f);
+        glm::vec2 textureCoordinates = glm::vec2(0.0f);
+        glm::ivec4 bonesIDs = glm::vec4(0.0f);
+        glm::vec4 bonesWeights = glm::vec4(0.0f);
+
+        void tryAddBoneData(GLint boneId, GLfloat weight);
     };
 
     struct Mesh {
         GLuint vertexArrayObject;
         unsigned int materialIndex;
         size_t indexesCount;
+        GLboolean hasBones;
 
         void init(std::vector<Vertex> &vertices, std::vector<unsigned int> &indexes);
 
@@ -54,7 +79,7 @@ class Model : public Actor {
         std::string nodeName;
         glm::mat4 globalTransformation;
 
-        void copyMeshes(const aiScene *scene, aiNode *node);
+        void copyMeshes(const aiScene *scene, aiNode *node, Skeleton &skeleton);
 
         void release();
     };
@@ -76,6 +101,7 @@ private:
     Assimp::Importer importer;
     const aiScene *scene;
 
+    Skeleton skeleton;
     std::vector<Node> nodes;
     std::vector<Material *> materials;
 };

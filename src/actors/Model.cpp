@@ -1,6 +1,53 @@
 #include <glm/ext.hpp>
 #include "Model.h"
 
+void Model::Vertex::tryAddBoneData(GLint boneId, GLfloat weight) {
+    for (int i = 0; i < 4; i++) {
+        if (bonesIDs[i] == 0) {
+            bonesIDs[i] = boneId;
+            bonesWeights[i] = weight;
+            return;
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (bonesWeights[i] < weight) {
+            LOGI("Model: replaced weight: '%f' with '%f'\n", bonesWeights[i], weight);
+
+            bonesIDs[i] = boneId;
+            bonesWeights[i] = weight;
+            return;
+        }
+    }
+
+    LOGI("Model: bone with id='%d' and weight='%f' was discarded\n", boneId, weight);
+}
+
+void Model::Skeleton::insert(Model::Bone *bone) {
+    if (bonesMap.count(bone->boneName) != 0) {
+        return;
+    }
+
+    bonesMap.insert({bone->boneName, bone});
+    bonesIndexes.insert({bone->boneName, bonesIndexes.size() + 1});
+}
+
+Model::Bone *Model::Skeleton::findBone(std::string &boneName) {
+    if (bonesMap.count(boneName) == 0) {
+        return NULL;
+    }
+
+    return bonesMap[boneName];
+}
+
+GLint Model::Skeleton::getBoneIndex(std::string &boneName) {
+    if (bonesIndexes.count(boneName) == 0) {
+        return -1;
+    }
+
+    return bonesIndexes[boneName];
+}
+
 void Model::Mesh::init(std::vector<Vertex> &vertices, std::vector<unsigned int> &indexes) {
     glGenVertexArrays(1, &vertexArrayObject);
 
@@ -25,6 +72,16 @@ void Model::Mesh::init(std::vector<Vertex> &vertices, std::vector<unsigned int> 
                           reinterpret_cast<GLvoid *>(offsetof(Vertex, textureCoordinates)));
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                           reinterpret_cast<GLvoid *>(offsetof(Vertex, normal)));
+
+    if (hasBones) {
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
+
+        glVertexAttribPointer(3, 4, GL_INT, GL_FALSE, sizeof(Vertex),
+                              reinterpret_cast<GLvoid *>(offsetof(Vertex, bonesIDs)));
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              reinterpret_cast<GLvoid *>(offsetof(Vertex, bonesWeights)));
+    }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes[0]) * indexes.size(), &indexes[0], GL_STATIC_DRAW);
@@ -82,7 +139,7 @@ void Model::Material::setTexture(const aiTexture *importedTexture) {
 }
 
 
-void Model::Node::copyMeshes(const aiScene *scene, aiNode *node) {
+void Model::Node::copyMeshes(const aiScene *scene, aiNode *node, Skeleton &skeleton) {
     auto meshesNumber = node->mNumMeshes;
 
     if (meshesNumber == 0) {
@@ -128,6 +185,34 @@ void Model::Node::copyMeshes(const aiScene *scene, aiNode *node) {
             }
         }
 
+        meshEntry.hasBones = static_cast<GLboolean>(importedMesh->mNumBones != 0);
+
+        if (!meshEntry.hasBones) {
+            LOGI("Model: mesh - '%s' doesn't have bones\n", importedMesh->mName.data);
+        }
+
+        for (auto j = 0; j < importedMesh->mNumBones; j++) {
+            auto assimpBone = importedMesh->mBones[j];
+            std::string boneName = assimpBone->mName.data;
+
+            Bone *bone = skeleton.findBone(boneName);
+
+            if (bone == NULL) {
+                bone = new Bone();
+                bone->boneName = boneName;
+                skeleton.insert(bone);
+            }
+
+            bone->boneOffsetMatrix = glm::toGlm(assimpBone->mOffsetMatrix);
+
+            auto boneIndex = skeleton.getBoneIndex(boneName);
+
+            for (auto k = 0; k < assimpBone->mNumWeights; k++) {
+                auto weightData = assimpBone->mWeights[k];
+                vertices[weightData.mVertexId].tryAddBoneData(boneIndex, weightData.mWeight);
+            }
+        }
+
         meshEntry.init(vertices, indices);
     }
 }
@@ -149,24 +234,44 @@ void Model::initialize(const char *path) {
     }
 
     initializeMaterials(path);
-
-    program->use();
-
     processNodes(scene->mRootNode);
+
+    LOGI("Model: initialized '%ld' render nodes\n", nodes.size());
+    LOGI("Model: initialized '%ld' bones\n", skeleton.bonesMap.size());
 }
 
 void Model::processNodes(aiNode *node, glm::mat4 transformation) {
     auto tmp = transformation * glm::toGlm(node->mTransformation);
 
+    std::string name = node->mName.data;
     if (node->mNumMeshes > 0) {
         Node object;
 
-        object.nodeName = node->mName.data;
+        object.nodeName = name;
         object.globalTransformation = tmp;
 
-        object.copyMeshes(scene, node);
+        object.copyMeshes(scene, node, skeleton);
 
         nodes.push_back(object);
+    } else {
+        Bone *bone = skeleton.findBone(name);
+
+        if (bone == NULL) {
+            bone = new Bone();
+            bone->boneName = name;
+            skeleton.insert(bone);
+        }
+
+        bone->bindMatrix = tmp;
+
+        if (node->mParent != NULL) {
+            std::string parentName(node->mParent->mName.data);
+            bone->parent = skeleton.findBone(parentName);
+
+            if (bone->parent != NULL) {
+                bone->parent->children.push_back(bone);
+            }
+        }
     }
 
     for (int i = 0; i < node->mNumChildren; i++) {
@@ -259,6 +364,8 @@ void Model::initializeMaterials(const std::string &modelFile) {
         assimpMaterial->Get(AI_MATKEY_REFLECTIVITY, materials[i]->reflectivity);
         assimpMaterial->Get(AI_MATKEY_TWOSIDED, materials[i]->disableBackCulling);
     }
+
+    LOGI("Model: initialized '%ld' materials\n", materials.size());
 }
 
 void Model::render() {
