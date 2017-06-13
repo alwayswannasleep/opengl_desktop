@@ -108,7 +108,7 @@ int main() {
     camera.setPosition(glm::vec3(0, 0, 4));
 
     model = new Model();
-    model->initialize("../resources/dragon/Dragon 2.5_fbx.fbx");
+    model->initialize("../resources/pilot/ArmyPilot.x");
     model->setScale(0.1f, 0.1f, 0.1f);
 
     perspective = glm::perspective<float>(45, 800 / 600, 1, 100);

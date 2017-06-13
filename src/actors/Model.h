@@ -9,27 +9,10 @@
 #include "../Texture.h"
 #include "../logs.h"
 #include "../glm_utils.h"
+#include "../Skeleton.h"
+#include "../Animation.h"
 
 class Model : public Actor {
-
-    struct Bone {
-        std::string boneName;
-        glm::mat4 bindMatrix;
-        glm::mat4 boneOffsetMatrix;
-        std::vector<Bone *> children;
-        Bone *parent;
-    };
-
-    struct Skeleton {
-        std::unordered_map<std::string, Bone *> bonesMap;
-        std::unordered_map<std::string, GLint> bonesIndexes;
-
-        void insert(Bone *bone);
-
-        Bone *findBone(std::string &boneName);
-
-        GLint getBoneIndex(std::string &boneName);
-    };
 
     struct Material {
         glm::vec3 specularColor;
@@ -90,6 +73,8 @@ public:
     void initialize(const char *path);
 
     void render() override;
+
+    void release() override;
 
 private:
 

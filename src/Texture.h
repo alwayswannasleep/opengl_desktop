@@ -16,6 +16,8 @@ public:
 
     void bind(GLenum textureUnit);
 
+    void release();
+
 private:
 
     bool loadImage(void *data, int width, int height, int channels);

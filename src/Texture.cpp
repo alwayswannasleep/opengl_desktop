@@ -50,3 +50,7 @@ void Texture::bind(GLenum textureUnit) {
     glActiveTexture(textureUnit);
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
+
+void Texture::release() {
+    glDeleteTextures(1, &textureId);
+}

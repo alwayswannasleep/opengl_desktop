@@ -55,4 +55,15 @@ namespace glm {
 
         return to;
     }
+
+    inline quat toGlm(const aiQuaternion &from) {
+        quat to;
+
+        to.x = from.x;
+        to.y = from.y;
+        to.z = from.z;
+        to.w = from.w;
+
+        return to;
+    }
 }

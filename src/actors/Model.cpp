@@ -23,31 +23,6 @@ void Model::Vertex::tryAddBoneData(GLint boneId, GLfloat weight) {
     LOGI("Model: bone with id='%d' and weight='%f' was discarded\n", boneId, weight);
 }
 
-void Model::Skeleton::insert(Model::Bone *bone) {
-    if (bonesMap.count(bone->boneName) != 0) {
-        return;
-    }
-
-    bonesMap.insert({bone->boneName, bone});
-    bonesIndexes.insert({bone->boneName, bonesIndexes.size() + 1});
-}
-
-Model::Bone *Model::Skeleton::findBone(std::string &boneName) {
-    if (bonesMap.count(boneName) == 0) {
-        return NULL;
-    }
-
-    return bonesMap[boneName];
-}
-
-GLint Model::Skeleton::getBoneIndex(std::string &boneName) {
-    if (bonesIndexes.count(boneName) == 0) {
-        return -1;
-    }
-
-    return bonesIndexes[boneName];
-}
-
 void Model::Mesh::init(std::vector<Vertex> &vertices, std::vector<unsigned int> &indexes) {
     glGenVertexArrays(1, &vertexArrayObject);
 
@@ -195,10 +170,10 @@ void Model::Node::copyMeshes(const aiScene *scene, aiNode *node, Skeleton &skele
             auto assimpBone = importedMesh->mBones[j];
             std::string boneName = assimpBone->mName.data;
 
-            Bone *bone = skeleton.findBone(boneName);
+            Skeleton::Bone *bone = skeleton.findBone(boneName);
 
             if (bone == NULL) {
-                bone = new Bone();
+                bone = new Skeleton::Bone();
                 bone->boneName = boneName;
                 skeleton.insert(bone);
             }
@@ -218,7 +193,9 @@ void Model::Node::copyMeshes(const aiScene *scene, aiNode *node, Skeleton &skele
 }
 
 void Model::Node::release() {
-
+    for (auto mesh : meshes) {
+        mesh.release();
+    }
 }
 
 void Model::initialize(const char *path) {
@@ -236,8 +213,12 @@ void Model::initialize(const char *path) {
     initializeMaterials(path);
     processNodes(scene->mRootNode);
 
+    auto pAnimation = scene->mAnimations[0];
+    Animation animation;
+    animation.initialize(pAnimation);
+
     LOGI("Model: initialized '%ld' render nodes\n", nodes.size());
-    LOGI("Model: initialized '%ld' bones\n", skeleton.bonesMap.size());
+    LOGI("Model: initialized '%ld' bones\n", skeleton.getBonesMap().size());
 }
 
 void Model::processNodes(aiNode *node, glm::mat4 transformation) {
@@ -254,10 +235,10 @@ void Model::processNodes(aiNode *node, glm::mat4 transformation) {
 
         nodes.push_back(object);
     } else {
-        Bone *bone = skeleton.findBone(name);
+        Skeleton::Bone *bone = skeleton.findBone(name);
 
         if (bone == NULL) {
-            bone = new Bone();
+            bone = new Skeleton::Bone();
             bone->boneName = name;
             skeleton.insert(bone);
         }
@@ -389,4 +370,18 @@ void Model::render() {
     }
 
     glBindVertexArray(0);
+}
+
+void Model::release() {
+    Actor::release();
+
+    for (auto node : nodes) {
+        node.release();
+    }
+
+    for (auto material : materials) {
+        if (material->hasTexture) {
+            material->texture->release();
+        }
+    }
 }
