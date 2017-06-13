@@ -11,7 +11,6 @@ private:
 public:
     Cube();
 
-
     void render() override;
 
 private:

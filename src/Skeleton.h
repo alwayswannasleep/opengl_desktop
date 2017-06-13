@@ -12,6 +12,8 @@ public:
         std::string boneName;
         glm::mat4 bindMatrix;
         glm::mat4 boneOffsetMatrix;
+        glm::mat4 animatedBoneMatrix = glm::mat4(1);
+        glm::mat4 animatedBoneOffsetMatrix = glm::mat4(1);
         std::vector<Bone *> children;
         Bone *parent;
     };
@@ -27,7 +29,12 @@ public:
 
     std::unordered_map<std::string, GLint> &getBonesIndexes();
 
+    void setRootBone(Bone *bone);
+
+    Bone *getRootBone();
+
 private:
     std::unordered_map<std::string, Bone *> bonesMap;
     std::unordered_map<std::string, GLint> bonesIndexes;
+    Bone *rootBone;
 };

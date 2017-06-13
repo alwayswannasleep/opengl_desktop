@@ -108,8 +108,7 @@ int main() {
     camera.setPosition(glm::vec3(0, 0, 4));
 
     model = new Model();
-    model->initialize("../resources/pilot/ArmyPilot.x");
-    model->setScale(0.1f, 0.1f, 0.1f);
+    model->initialize("../resources/wolf/Wolf_fbx.fbx");
 
     perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
 
@@ -130,7 +129,7 @@ int main() {
 
         auto projectionViewMatrix = perspective * camera.getViewMatrix();
 
-        model->update(projectionViewMatrix);
+        model->update(projectionViewMatrix, delta);
         model->render();
 
         glfwSwapBuffers(window);

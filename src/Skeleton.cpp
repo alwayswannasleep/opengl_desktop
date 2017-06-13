@@ -33,3 +33,11 @@ std::unordered_map<std::string, Skeleton::Bone *> &Skeleton::getBonesMap() {
 std::unordered_map<std::string, GLint> &Skeleton::getBonesIndexes() {
     return bonesIndexes;
 }
+
+void Skeleton::setRootBone(Skeleton::Bone *bone) {
+    rootBone = bone;
+}
+
+Skeleton::Bone *Skeleton::getRootBone() {
+    return rootBone;
+}

@@ -11,7 +11,7 @@ class Actor {
 public:
     ~Actor();
 
-    void update(glm::mat4 &transformationMatrix);
+    virtual void update(glm::mat4 &transformationMatrix, float deltaTime);
 
     virtual void render();
 

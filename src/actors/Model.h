@@ -11,6 +11,7 @@
 #include "../glm_utils.h"
 #include "../Skeleton.h"
 #include "../Animation.h"
+#include "../Animator.h"
 
 class Model : public Actor {
 
@@ -72,6 +73,8 @@ public:
 
     void initialize(const char *path);
 
+    void update(glm::mat4 &transformationMatrix, float deltaTime) override;
+
     void render() override;
 
     void release() override;
@@ -86,7 +89,10 @@ private:
     Assimp::Importer importer;
     const aiScene *scene;
 
+    Animator animator;
+
     Skeleton skeleton;
     std::vector<Node> nodes;
     std::vector<Material *> materials;
+    std::vector<Animation *> animations;
 };

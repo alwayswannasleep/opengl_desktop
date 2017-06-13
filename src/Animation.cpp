@@ -7,126 +7,114 @@ void Animation::initialize(const aiAnimation *animation) {
     totalTicksCount = static_cast<int>(animation->mDuration);
 
     auto channelsCount = animation->mNumChannels;
-
-    translations.reserve(channelsCount);
-    rotations.reserve(channelsCount);
-    scaling.reserve(channelsCount);
-
-    translationsIndexes.reserve(channelsCount);
-    rotationIndexes.reserve(channelsCount);
-    scalingIndexes.reserve(channelsCount);
+//
+//    translations.reserve(channelsCount);
+//    rotations.reserve(channelsCount);
+//    scalings.reserve(channelsCount);
+//
+//    translationsIndexes.reserve(channelsCount);
+//    rotationIndexes.reserve(channelsCount);
+//    scalingIndexes.reserve(channelsCount);
 
     for (auto i = 0; i < channelsCount; i++) {
         auto channel = animation->mChannels[i];
-        std::string channelName(channel->mNodeName.data);
+        std::string channelName = channel->mNodeName.data;
 
-        std::vector<std::pair<size_t, size_t>> positionKeys;
-        positionKeys.resize(static_cast<size_t>(totalTicksCount));
-
-        std::vector<aiVectorKey> positions;
-        positions.resize(channel->mNumPositionKeys);
+        translations.emplace(channelName, std::vector<aiVectorKey>());
+        translationsIndexes.emplace(channelName, std::vector<std::pair<size_t, size_t>>());
+//
+//        translations.at(channelName).resize(channel->mNumPositionKeys);
+//        translationsIndexes.at(channelName).resize(static_cast<size_t>(totalTicksCount));
 
         size_t startPosition = 0;
         for (size_t j = 0; j < channel->mNumPositionKeys; j++) {
             auto key = channel->mPositionKeys[j];
 
-            positions[j] = key;
+            translations[channelName].push_back(key);
 
             if (j == 0) {
                 continue;
             }
 
             for (auto k = startPosition; k <= key.mTime; k++) {
-                positionKeys[k] = {j - 1, j};
+                translationsIndexes[channelName].push_back(std::make_pair(j - 1, j));
             }
 
             startPosition = static_cast<size_t>(key.mTime + 1);
         }
 
-        translations[channelName] = positions;
-        translationsIndexes[channelName] = positionKeys;
-
-        std::vector<std::pair<size_t, size_t>> rotationsKeys;
-        rotationsKeys.resize(static_cast<size_t>(totalTicksCount));
-
-        std::vector<aiQuatKey> rotations;
-        rotations.resize(channel->mNumRotationKeys);
+        rotations.emplace(channelName, std::vector<aiQuatKey>());
+        rotationIndexes.emplace(channelName, std::vector<std::pair<size_t, size_t>>());
+//
+//        rotations.at(channelName).resize(channel->mNumRotationKeys);
+//        rotationIndexes.at(channelName).resize(static_cast<size_t>(totalTicksCount));
 
         startPosition = 0;
         for (size_t j = 0; j < channel->mNumRotationKeys; j++) {
             auto key = channel->mRotationKeys[j];
 
-            rotations[j] = key;
+            rotations[channelName].push_back(key);
 
             if (j == 0) {
                 continue;
             }
 
             for (auto k = startPosition; k <= key.mTime; k++) {
-                positionKeys[k] = {j - 1, j};
+                rotationIndexes[channelName].push_back(std::make_pair(j - 1, j));
             }
 
             startPosition = static_cast<size_t>(key.mTime + 1);
         }
 
-        this->rotations[channelName] = rotations;
-        rotationIndexes[channelName] = rotationsKeys;
-
-        std::vector<std::pair<size_t, size_t>> scalingKeys;
-        scalingKeys.resize(static_cast<size_t>(totalTicksCount));
-
-        std::vector<aiVectorKey> scalings;
-        scalings.resize(channel->mNumScalingKeys);
+        scalings.emplace(channelName, std::vector<aiVectorKey>());
+        scalingIndexes.emplace(channelName, std::vector<std::pair<size_t, size_t>>());
+//
+//        scalings.at(channelName).resize(channel->mNumScalingKeys);
+//        scalingIndexes.at(channelName).resize(static_cast<size_t>(totalTicksCount));
 
         startPosition = 0;
         for (size_t j = 0; j < channel->mNumScalingKeys; j++) {
             auto key = channel->mScalingKeys[j];
 
-            scalings[j] = key;
+            scalings[channelName].push_back(key);
 
             if (j == 0) {
                 continue;
             }
 
             for (auto k = startPosition; k <= key.mTime; k++) {
-                positionKeys[k] = {j - 1, j};
+                scalingIndexes[channelName].push_back(std::make_pair(j - 1, j));
             }
 
             startPosition = static_cast<size_t>(key.mTime + 1);
         }
-
-        scaling[channelName] = positions;
-        scalingIndexes[channelName] = scalingKeys;
     }
 
-    LOGI("Animation: scaling indexes count %ld\n", scalingIndexes.size());
-    LOGI("Animation: rotation indexes count %ld\n", rotationIndexes.size());
-    LOGI("Animation: translation indexes count %ld\n", translationsIndexes.size());
-    LOGI("Animation: scaling count %ld\n", scaling.size());
+    LOGI("Animation: scaling count %ld\n", scalings.size());
     LOGI("Animation: rotation count %ld\n", rotations.size());
     LOGI("Animation: translation count %ld\n", translations.size());
 }
 
-int Animation::getTotalTicksCount() {
+int Animation::getTotalTicksCount() const {
     return totalTicksCount;
 }
 
-int Animation::getTicksPerSecond() {
+int Animation::getTicksPerSecond() const {
     return ticksPerSecond;
 }
 
-glm::vec3 Animation::getInterpolatedTranlsation(std::string &nodeName, float animationTime) {
+glm::vec3 Animation::getInterpolatedTranslation(const std::string &nodeName, const float &animationTime) const {
     if (translationsIndexes.count(nodeName) == 0) {
         return glm::vec3(-1);
     }
 
-    if (translations[nodeName].size() == 1) {
-        return glm::toGlm(translations[nodeName].begin()->mValue);
+    if (translations.at(nodeName).size() == 1) {
+        return glm::toGlm(translations.at(nodeName).begin()->mValue);
     }
 
-    auto indexes = translationsIndexes[nodeName][static_cast<size_t>(animationTime)];
-    auto start = translations[nodeName][indexes.first];
-    auto end = translations[nodeName][indexes.second];
+    auto indexes = translationsIndexes.at(nodeName).at(static_cast<size_t>(animationTime));
+    auto start = translations.at(nodeName).at(indexes.first);
+    auto end = translations.at(nodeName).at(indexes.second);
 
     auto keysDelta = end.mTime - start.mTime;
     auto delta = animationTime - start.mTime;
@@ -135,18 +123,18 @@ glm::vec3 Animation::getInterpolatedTranlsation(std::string &nodeName, float ani
     return glm::toGlm((start.mValue - end.mValue) * factor + start.mValue);
 }
 
-glm::vec3 Animation::getInterpolatedScaling(std::string &nodeName, float animationTime) {
+glm::vec3 Animation::getInterpolatedScaling(const std::string &nodeName, const float &animationTime) const {
     if (scalingIndexes.count(nodeName) == 0) {
         return glm::vec3(-1);
     }
 
-    if (scaling[nodeName].size() == 1) {
-        return glm::toGlm(translations[nodeName].begin()->mValue);
+    if (scalings.at(nodeName).size() == 1) {
+        return glm::toGlm(translations.at(nodeName).begin()->mValue);
     }
 
-    auto indexes = scalingIndexes[nodeName][static_cast<size_t>(animationTime)];
-    auto start = scaling[nodeName][indexes.first];
-    auto end = scaling[nodeName][indexes.second];
+    auto indexes = scalingIndexes.at(nodeName).at(static_cast<size_t>(animationTime));
+    auto start = scalings.at(nodeName).at(indexes.first);
+    auto end = scalings.at(nodeName).at(indexes.second);
 
     auto keysDelta = end.mTime - start.mTime;
     auto delta = animationTime - start.mTime;
@@ -155,29 +143,33 @@ glm::vec3 Animation::getInterpolatedScaling(std::string &nodeName, float animati
     return glm::toGlm((start.mValue - end.mValue) * factor + start.mValue);
 }
 
-glm::quat Animation::getInterpolatedRotation(std::string &nodeName, float animationTime) {
+glm::quat Animation::getInterpolatedRotation(const std::string &nodeName, const float &animationTime) const {
     if (rotationIndexes.count(nodeName) == 0) {
         return glm::quat(-1, -1, -1, -1);
     }
 
-    if (rotationIndexes[nodeName].size() == 1) {
-        return glm::toGlm(rotations[nodeName].begin()->mValue);
+    if (rotationIndexes.at(nodeName).size() == 1) {
+        return glm::toGlm(rotations.at(nodeName).begin()->mValue);
     }
 
-    auto indexes = rotationIndexes[nodeName][static_cast<size_t>(animationTime)];
-    auto start = rotations[nodeName][indexes.first];
-    auto end = rotations[nodeName][indexes.second];
+    auto indexes = rotationIndexes.at(nodeName).at(static_cast<size_t>(animationTime));
+    auto start = rotations.at(nodeName).at(indexes.first);
+    auto end = rotations.at(nodeName).at(indexes.second);
 
     auto keysDelta = end.mTime - start.mTime;
     auto delta = animationTime - start.mTime;
     float factor = std::abs(static_cast<float>(delta / keysDelta));
 
     aiQuaternion result;
-    aiQuaternion.Interpolate(result, start.mValue, end.mValue, factor);
+    aiQuaternion::Interpolate(result, start.mValue, end.mValue, factor);
 
     return glm::toGlm(result);
 }
 
-std::string &Animation::getName() {
+const std::string &Animation::getName() const {
     return name;
+}
+
+bool Animation::containsBone(const std::string &boneName) const {
+    return rotations.count(boneName) != 0 && translations.count(boneName) != 0 && scalings.count(boneName) != 0;
 }

@@ -16,11 +16,11 @@ Actor::~Actor() {
     }
 }
 
-void Actor::update(glm::mat4 &transformationMatrix) {
+void Actor::update(glm::mat4 &transformationMatrix, float deltaTime) {
     modelMatrix = transformationMatrix * translationMatrix * scaleMatrix * rotationMatrix;
 
     for (auto child : children) {
-        child->update(modelMatrix);
+        child->update(modelMatrix, deltaTime);
     }
 }
 

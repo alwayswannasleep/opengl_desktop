@@ -14,17 +14,19 @@ class Animation {
 public:
     void initialize(const aiAnimation *animation);
 
-    int getTotalTicksCount();
+    int getTotalTicksCount() const;
 
-    int getTicksPerSecond();
+    int getTicksPerSecond() const;
 
-    glm::vec3 getInterpolatedTranlsation(std::string &nodeName, float animationTime);
+    glm::vec3 getInterpolatedTranslation(const std::string &nodeName, const float &animationTime) const;
 
-    glm::vec3 getInterpolatedScaling(std::string &nodeName, float animationTime);
+    glm::vec3 getInterpolatedScaling(const std::string &nodeName, const float &animationTime) const;
 
-    glm::quat getInterpolatedRotation(std::string &nodeName, float animationTime);
+    glm::quat getInterpolatedRotation(const std::string &nodeName, const float &animationTime) const;
 
-    std::string &getName();
+    const std::string &getName() const;
+
+    bool containsBone(const std::string &boneName) const;
 
 private:
     int totalTicksCount;
@@ -36,6 +38,6 @@ private:
     std::unordered_map<std::string, std::vector<std::pair<size_t, size_t>>> scalingIndexes;
     std::unordered_map<std::string, std::vector<std::pair<size_t, size_t>>> rotationIndexes;
     std::unordered_map<std::string, std::vector<aiVectorKey>> translations;
-    std::unordered_map<std::string, std::vector<aiVectorKey>> scaling;
+    std::unordered_map<std::string, std::vector<aiVectorKey>> scalings;
     std::unordered_map<std::string, std::vector<aiQuatKey>> rotations;
 };

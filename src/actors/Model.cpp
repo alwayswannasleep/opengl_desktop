@@ -213,12 +213,26 @@ void Model::initialize(const char *path) {
     initializeMaterials(path);
     processNodes(scene->mRootNode);
 
-    auto pAnimation = scene->mAnimations[0];
-    Animation animation;
-    animation.initialize(pAnimation);
+    std::string rootNodeName(scene->mRootNode->mName.data);
+    skeleton.setRootBone(skeleton.findBone(rootNodeName));
+
+    for (auto i = 0; i < scene->mNumAnimations; i++) {
+        auto animation = new Animation();
+        animation->initialize(scene->mAnimations[i]);
+
+        animations.push_back(animation);
+    }
+
+    if (!animations.empty()) {
+        animator.setSkeleton(&skeleton);
+        animator.start();
+
+        animator.setAnimation(animations[2]);
+    }
 
     LOGI("Model: initialized '%ld' render nodes\n", nodes.size());
     LOGI("Model: initialized '%ld' bones\n", skeleton.getBonesMap().size());
+    LOGI("Model: initialized '%ld' animations\n", animations.size());
 }
 
 void Model::processNodes(aiNode *node, glm::mat4 transformation) {
@@ -235,6 +249,7 @@ void Model::processNodes(aiNode *node, glm::mat4 transformation) {
 
         nodes.push_back(object);
     } else {
+        // TODO rework loading for same nodes names
         Skeleton::Bone *bone = skeleton.findBone(name);
 
         if (bone == NULL) {
@@ -245,7 +260,7 @@ void Model::processNodes(aiNode *node, glm::mat4 transformation) {
 
         bone->bindMatrix = tmp;
 
-        if (node->mParent != NULL) {
+        if (node->mParent != NULL && name != node->mParent->mName.data) {
             std::string parentName(node->mParent->mName.data);
             bone->parent = skeleton.findBone(parentName);
 
@@ -384,4 +399,9 @@ void Model::release() {
             material->texture->release();
         }
     }
+}
+
+void Model::update(glm::mat4 &transformationMatrix, float deltaTime) {
+    Actor::update(transformationMatrix, deltaTime);
+    animator.update(static_cast<int>(deltaTime));
 }
