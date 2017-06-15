@@ -1,4 +1,5 @@
 #include "Skeleton.h"
+#include "logs.h"
 
 
 void Skeleton::insert(Skeleton::Bone *bone) {
@@ -7,23 +8,25 @@ void Skeleton::insert(Skeleton::Bone *bone) {
     }
 
     bonesMap.insert({bone->boneName, bone});
-    bonesIndexes.insert({bone->boneName, bonesIndexes.size() + 1});
+    bonesIndexes.insert({bone->boneName, bonesIndexes.size()});
+
+    LOGI("Skeleton: bone '%s' with id - '%d'\n", bone->boneName.c_str(), bonesIndexes[bone->boneName]);
 }
 
-Skeleton::Bone *Skeleton::findBone(std::string &boneName) {
+Skeleton::Bone *Skeleton::findBone(const std::string &boneName) const {
     if (bonesMap.count(boneName) == 0) {
         return NULL;
     }
 
-    return bonesMap[boneName];
+    return bonesMap.at(boneName);
 }
 
-GLint Skeleton::getBoneIndex(std::string &boneName) {
+GLint Skeleton::getBoneIndex(const std::string &boneName) const {
     if (bonesIndexes.count(boneName) == 0) {
         return -1;
     }
 
-    return bonesIndexes[boneName];
+    return bonesIndexes.at(boneName);
 }
 
 std::unordered_map<std::string, Skeleton::Bone *> &Skeleton::getBonesMap() {
@@ -34,10 +37,10 @@ std::unordered_map<std::string, GLint> &Skeleton::getBonesIndexes() {
     return bonesIndexes;
 }
 
-void Skeleton::setRootBone(Skeleton::Bone *bone) {
-    rootBone = bone;
+void Skeleton::setRootNode(const aiNode *rootNode) {
+    this->rootNode = rootNode;
 }
 
-Skeleton::Bone *Skeleton::getRootBone() {
-    return rootBone;
+const aiNode *Skeleton::getRootNode() const {
+    return rootNode;
 }

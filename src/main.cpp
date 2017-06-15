@@ -108,9 +108,10 @@ int main() {
     camera.setPosition(glm::vec3(0, 0, 4));
 
     model = new Model();
-    model->initialize("../resources/wolf/Wolf_fbx.fbx");
+    model->initialize("../resources/brute/jump_attack.fbx");
+    model->setScale(0.01, 0.01, 0.01);
 
-    perspective = glm::perspective<float>(45, 800 / 600, 1, 100);
+    perspective = glm::perspective<float>(45, 800 / 600, 0.01f, 1000);
 
     int fps = 0;
     auto start = getCurrentTime();

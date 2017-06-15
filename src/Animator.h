@@ -7,6 +7,8 @@ class Animator {
 
 public:
 
+    Animator();
+
     void setSkeleton(Skeleton *skeleton);
 
     void setAnimation(Animation *animation);
@@ -19,13 +21,13 @@ public:
 
 private:
 
-    void updateBones(Skeleton::Bone *bone, int deltaTime);
+    void updateBones(const aiNode *node, int deltaTime, glm::mat4 transformation = glm::mat4(1));
 
 private:
 
     Animation *animation;
 
-    int currentTick;
+    float currentTick;
 
     Skeleton *skeleton;
 

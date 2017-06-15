@@ -7,14 +7,6 @@ void Animation::initialize(const aiAnimation *animation) {
     totalTicksCount = static_cast<int>(animation->mDuration);
 
     auto channelsCount = animation->mNumChannels;
-//
-//    translations.reserve(channelsCount);
-//    rotations.reserve(channelsCount);
-//    scalings.reserve(channelsCount);
-//
-//    translationsIndexes.reserve(channelsCount);
-//    rotationIndexes.reserve(channelsCount);
-//    scalingIndexes.reserve(channelsCount);
 
     for (auto i = 0; i < channelsCount; i++) {
         auto channel = animation->mChannels[i];
@@ -22,9 +14,6 @@ void Animation::initialize(const aiAnimation *animation) {
 
         translations.emplace(channelName, std::vector<aiVectorKey>());
         translationsIndexes.emplace(channelName, std::vector<std::pair<size_t, size_t>>());
-//
-//        translations.at(channelName).resize(channel->mNumPositionKeys);
-//        translationsIndexes.at(channelName).resize(static_cast<size_t>(totalTicksCount));
 
         size_t startPosition = 0;
         for (size_t j = 0; j < channel->mNumPositionKeys; j++) {
@@ -45,9 +34,6 @@ void Animation::initialize(const aiAnimation *animation) {
 
         rotations.emplace(channelName, std::vector<aiQuatKey>());
         rotationIndexes.emplace(channelName, std::vector<std::pair<size_t, size_t>>());
-//
-//        rotations.at(channelName).resize(channel->mNumRotationKeys);
-//        rotationIndexes.at(channelName).resize(static_cast<size_t>(totalTicksCount));
 
         startPosition = 0;
         for (size_t j = 0; j < channel->mNumRotationKeys; j++) {
@@ -68,9 +54,6 @@ void Animation::initialize(const aiAnimation *animation) {
 
         scalings.emplace(channelName, std::vector<aiVectorKey>());
         scalingIndexes.emplace(channelName, std::vector<std::pair<size_t, size_t>>());
-//
-//        scalings.at(channelName).resize(channel->mNumScalingKeys);
-//        scalingIndexes.at(channelName).resize(static_cast<size_t>(totalTicksCount));
 
         startPosition = 0;
         for (size_t j = 0; j < channel->mNumScalingKeys; j++) {
@@ -88,11 +71,12 @@ void Animation::initialize(const aiAnimation *animation) {
 
             startPosition = static_cast<size_t>(key.mTime + 1);
         }
-    }
 
-    LOGI("Animation: scaling count %ld\n", scalings.size());
-    LOGI("Animation: rotation count %ld\n", rotations.size());
-    LOGI("Animation: translation count %ld\n", translations.size());
+        LOGI("\nAnimation: initialized '%s' \n\n", channelName.c_str());
+        LOGI("Animation: initialized scaling count %ld\n", scalingIndexes.at(channelName).size());
+        LOGI("Animation: initialized rotation count %ld\n", rotationIndexes.at(channelName).size());
+        LOGI("Animation: initialized translation count %ld\n", translationsIndexes.at(channelName).size());
+    }
 }
 
 int Animation::getTotalTicksCount() const {
@@ -104,8 +88,8 @@ int Animation::getTicksPerSecond() const {
 }
 
 glm::vec3 Animation::getInterpolatedTranslation(const std::string &nodeName, const float &animationTime) const {
-    if (translationsIndexes.count(nodeName) == 0) {
-        return glm::vec3(-1);
+    if (translationsIndexes.count(nodeName) == 0 || translationsIndexes.at(nodeName).empty()) {
+        return translations.at(nodeName).empty() ? glm::vec3(0) : glm::toGlm(translations.at(nodeName).begin()->mValue);
     }
 
     if (translations.at(nodeName).size() == 1) {
@@ -124,8 +108,8 @@ glm::vec3 Animation::getInterpolatedTranslation(const std::string &nodeName, con
 }
 
 glm::vec3 Animation::getInterpolatedScaling(const std::string &nodeName, const float &animationTime) const {
-    if (scalingIndexes.count(nodeName) == 0) {
-        return glm::vec3(-1);
+    if (scalingIndexes.count(nodeName) == 0 || scalingIndexes.at(nodeName).empty()) {
+        return scalings.at(nodeName).empty() ? glm::vec3(0) : glm::toGlm(scalings.at(nodeName).begin()->mValue);
     }
 
     if (scalings.at(nodeName).size() == 1) {
@@ -144,8 +128,9 @@ glm::vec3 Animation::getInterpolatedScaling(const std::string &nodeName, const f
 }
 
 glm::quat Animation::getInterpolatedRotation(const std::string &nodeName, const float &animationTime) const {
-    if (rotationIndexes.count(nodeName) == 0) {
-        return glm::quat(-1, -1, -1, -1);
+    if (rotationIndexes.count(nodeName) == 0 || rotationIndexes.at(nodeName).empty()) {
+        return rotations.at(nodeName).empty() ? glm::quat(0, 0, 0, 0) : glm::toGlm(
+                rotations.at(nodeName).begin()->mValue);
     }
 
     if (rotationIndexes.at(nodeName).size() == 1) {

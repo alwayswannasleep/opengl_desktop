@@ -1,6 +1,10 @@
 #include "Animator.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+Animator::Animator() : animation(NULL), skeleton(NULL), playAnimation(false), currentTick(0) {
+}
 
 void Animator::setSkeleton(Skeleton *skeleton) {
     this->skeleton = skeleton;
@@ -15,37 +19,40 @@ void Animator::update(int deltaTime) {
         return;
     }
 
-    currentTick = static_cast<int>(std::fmod(deltaTime / 1000.f * animation->getTicksPerSecond(),
-                                             animation->getTotalTicksCount()));
+    auto ticksPerDelta = deltaTime / 1000.f * animation->getTicksPerSecond();
+    float newTickValue = currentTick + ticksPerDelta;
+    currentTick = std::fmodf(newTickValue, animation->getTotalTicksCount());
 
-    auto rootBone = skeleton->getRootBone();
-    updateBones(rootBone, currentTick);
+    updateBones(skeleton->getRootNode(), static_cast<int>(currentTick));
 }
 
-void Animator::updateBones(Skeleton::Bone *rootBone, int deltaTime) {
-    auto bindMatrix = rootBone->bindMatrix;
+void Animator::updateBones(const aiNode *node, int deltaTime, glm::mat4 transformation) {
+    auto bindMatrix = glm::toGlm(node->mTransformation);
 
-    glm::mat4 parentAnimatedMatrix(1);
+    auto bone = skeleton->findBone(node->mName.data);
 
-    if (rootBone->parent != NULL) {
-        parentAnimatedMatrix = rootBone->parent->animatedBoneMatrix;
-    }
+    if (bone != NULL) {
+        if (animation->containsBone(node->mName.data)) {
+            auto translation = animation->getInterpolatedTranslation(node->mName.data, deltaTime);
+            auto rotation = animation->getInterpolatedRotation(node->mName.data, deltaTime);
+            auto scaling = animation->getInterpolatedScaling(node->mName.data, deltaTime);
 
-    if (animation->containsBone(rootBone->boneName)) {
-        auto translation = animation->getInterpolatedTranslation(rootBone->boneName, deltaTime);
-        auto rotation = animation->getInterpolatedRotation(rootBone->boneName, deltaTime);
-        auto scaling = animation->getInterpolatedScaling(rootBone->boneName, deltaTime);
+            transformation =
+                    transformation * glm::translate(glm::mat4(1), translation) * glm::scale(glm::mat4(1), scaling) *
+                    glm::toMat4(rotation);
+            bone->animatedBoneOffsetMatrix = transformation * bone->boneOffsetMatrix * glm::inverse(
+                    glm::transpose(glm::toGlm(skeleton->getRootNode()->mTransformation)));
+        } else {
+            transformation = transformation * bindMatrix;
+        }
 
-        rootBone->animatedBoneMatrix =
-                parentAnimatedMatrix * glm::translate(glm::mat4(1), translation) * glm::scale(glm::mat4(1), scaling) *
-                glm::toMat4(rotation);
-        rootBone->animatedBoneOffsetMatrix = rootBone->animatedBoneMatrix * rootBone->boneOffsetMatrix;
+        bone->animatedBoneMatrix = transformation;
     } else {
-        rootBone->animatedBoneMatrix = parentAnimatedMatrix * bindMatrix;
+        transformation = transformation * bindMatrix;
     }
 
-    for (auto bone : rootBone->children) {
-        updateBones(bone, deltaTime);
+    for (auto i = 0; i < node->mNumChildren; i++) {
+        updateBones(node->mChildren[i], deltaTime, transformation);
     }
 }
 

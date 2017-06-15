@@ -41,7 +41,7 @@ class Model : public Actor {
         glm::vec3 position = glm::vec3(0.0f);
         glm::vec3 normal = glm::vec3(0.0f);
         glm::vec2 textureCoordinates = glm::vec2(0.0f);
-        glm::ivec4 bonesIDs = glm::vec4(0.0f);
+        glm::vec4 bonesIDs = glm::vec4(0.0f);
         glm::vec4 bonesWeights = glm::vec4(0.0f);
 
         void tryAddBoneData(GLint boneId, GLfloat weight);
@@ -52,6 +52,9 @@ class Model : public Actor {
         unsigned int materialIndex;
         size_t indexesCount;
         GLboolean hasBones;
+        std::vector<Skeleton::Bone *> bones;
+
+        const std::vector<glm::mat4> getBonesMatrices();
 
         void init(std::vector<Vertex> &vertices, std::vector<unsigned int> &indexes);
 
@@ -81,7 +84,7 @@ public:
 
 private:
 
-    void processNodes(aiNode *node, glm::mat4 transformation = glm::mat4(1));
+    void initializeMeshes(aiNode *node, glm::mat4 transformation = glm::mat4(1));
 
     void initializeMaterials(const std::string &modelFile);
 
