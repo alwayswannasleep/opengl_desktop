@@ -108,7 +108,7 @@ int main() {
     camera.setPosition(glm::vec3(0, 0, 4));
 
     model = new Model();
-    model->initialize("../resources/brute/jump_attack.fbx");
+    model->initialize("../resources/dragon/Dragon_Baked_Actions_fbx_7.4_binary.fbx");
     model->setScale(0.01, 0.01, 0.01);
 
     perspective = glm::perspective<float>(45, 800 / 600, 0.01f, 1000);

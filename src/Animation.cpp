@@ -109,7 +109,7 @@ glm::vec3 Animation::getInterpolatedTranslation(const std::string &nodeName, con
 
 glm::vec3 Animation::getInterpolatedScaling(const std::string &nodeName, const float &animationTime) const {
     if (scalingIndexes.count(nodeName) == 0 || scalingIndexes.at(nodeName).empty()) {
-        return scalings.at(nodeName).empty() ? glm::vec3(0) : glm::toGlm(scalings.at(nodeName).begin()->mValue);
+        return scalings.at(nodeName).empty() ? glm::vec3(1) : glm::toGlm(scalings.at(nodeName).begin()->mValue);
     }
 
     if (scalings.at(nodeName).size() == 1) {
