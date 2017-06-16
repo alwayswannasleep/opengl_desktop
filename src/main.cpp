@@ -100,6 +100,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
 
     glCullFace(GL_BACK);
 
@@ -108,7 +109,7 @@ int main() {
     camera.setPosition(glm::vec3(0, 0, 4));
 
     model = new Model();
-    model->initialize("../resources/dragon/Dragon_Baked_Actions_fbx_7.4_binary.fbx");
+    model->initialize("../resources/test/opening.fbx");
     model->setScale(0.01, 0.01, 0.01);
 
     perspective = glm::perspective<float>(45, 800 / 600, 0.01f, 1000);
