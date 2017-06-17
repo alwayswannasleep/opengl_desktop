@@ -8,6 +8,7 @@
 #include "logs.h"
 #include "assimp/Importer.hpp"
 #include "actors/Model.h"
+#include "actors/Cube.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
@@ -106,11 +107,14 @@ int main() {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    camera.setPosition(glm::vec3(0, 0, 4));
+    camera.setPosition(glm::vec3(0, 2, 4));
 
+    Cube cube;
+    cube.setScale(100, 0.001, 100);
+    cube.setPosition(glm::vec3(0, 0, 0));
     model = new Model();
-    model->initialize("../resources/test/opening.fbx");
-    model->setScale(0.01, 0.01, 0.01);
+    model->initialize("../resources/caster/caster.fbx");
+    model->setScale(0.1, 0.1, 0.1);
 
     perspective = glm::perspective<float>(45, 800 / 600, 0.01f, 1000);
 
@@ -130,6 +134,9 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto projectionViewMatrix = perspective * camera.getViewMatrix();
+
+        cube.update(projectionViewMatrix, delta);
+        cube.render();
 
         model->update(projectionViewMatrix, delta);
         model->render();

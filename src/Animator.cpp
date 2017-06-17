@@ -29,37 +29,24 @@ void Animator::update(int deltaTime) {
 void Animator::updateBones(const aiNode *node, int deltaTime, glm::mat4 transformation) {
     auto bindMatrix = glm::toGlm(node->mTransformation);
 
+    if (animation->containsBone(node->mName.data)) {
+        auto translation = animation->getInterpolatedTranslation(node->mName.data, deltaTime);
+        auto rotation = animation->getInterpolatedRotation(node->mName.data, deltaTime);
+        auto scaling = animation->getInterpolatedScaling(node->mName.data, deltaTime);
+
+        transformation =
+                transformation * glm::translate(glm::mat4(1), translation) * glm::scale(glm::mat4(1), scaling) *
+                glm::toMat4(rotation);
+    } else {
+        transformation = transformation * bindMatrix;
+    }
+
     auto bone = skeleton->findBone(node->mName.data);
 
     if (bone != NULL) {
-        if (animation->containsBone(node->mName.data)) {
-            auto translation = animation->getInterpolatedTranslation(node->mName.data, deltaTime);
-            auto rotation = animation->getInterpolatedRotation(node->mName.data, deltaTime);
-            auto scaling = animation->getInterpolatedScaling(node->mName.data, deltaTime);
-
-            transformation =
-                    transformation * glm::translate(glm::mat4(1), translation) * glm::scale(glm::mat4(1), scaling) *
-                    glm::toMat4(rotation);
-        } else {
-            transformation = transformation * bindMatrix;
-        }
-
         bone->animatedBoneOffsetMatrix = transformation * bone->boneOffsetMatrix * glm::inverse(
                 glm::transpose(glm::toGlm(skeleton->getRootNode()->mTransformation)));
         bone->animatedBoneMatrix = transformation;
-    } else {
-        if (animation->containsBone(node->mName.data)) {
-            auto translation = animation->getInterpolatedTranslation(node->mName.data, deltaTime);
-            auto rotation = animation->getInterpolatedRotation(node->mName.data, deltaTime);
-            auto scaling = animation->getInterpolatedScaling(node->mName.data, deltaTime);
-
-            transformation =
-                    transformation * glm::translate(glm::mat4(1), translation) * glm::scale(glm::mat4(1), scaling) *
-                    glm::toMat4(rotation);
-        } else {
-            transformation = transformation * bindMatrix;
-        }
-
     }
 
     for (auto i = 0; i < node->mNumChildren; i++) {
