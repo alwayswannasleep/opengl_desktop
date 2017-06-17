@@ -116,6 +116,11 @@ int main() {
     model->initialize("../resources/caster/caster.fbx");
     model->setScale(0.1, 0.1, 0.1);
 
+    Model sphere;
+    sphere.initialize("../resources/sphere.obj");
+    sphere.setScale(5, 5, 5);
+    sphere.setPosition(glm::vec3(10, 10, 0));
+
     perspective = glm::perspective<float>(45, 800 / 600, 0.01f, 1000);
 
     int fps = 0;
@@ -137,6 +142,9 @@ int main() {
 
         cube.update(projectionViewMatrix, delta);
         cube.render();
+
+        sphere.update(projectionViewMatrix, delta);
+        sphere.render();
 
         model->update(projectionViewMatrix, delta);
         model->render();
