@@ -173,7 +173,7 @@ int main() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, hdrFrameBuffer);
         {
-            glClearColor(0.4f, 0.4f, 0.4f, 1);
+            glClearColor(0.01f, 0.01f, 0.01f, 1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             auto projectionViewMatrix = perspective * camera.getViewMatrix();

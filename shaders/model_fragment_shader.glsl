@@ -11,7 +11,7 @@ out vec4 color;
 
 void main() {
     const float gamma = 2.2;
-    vec3 lightColor = vec3(0.7);
+    vec3 lightColor = vec3(2.0);
     float ambientStrength = 0.1;
     float specularStrength = 0.1;
     vec3 lightPosition = vec3(100.0, 100.0, 35.0);
