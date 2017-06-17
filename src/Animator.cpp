@@ -21,7 +21,7 @@ void Animator::update(int deltaTime) {
 
     auto ticksPerDelta = deltaTime / 1000.f * animation->getTicksPerSecond();
     float newTickValue = currentTick + ticksPerDelta;
-    currentTick = std::fmodf(newTickValue, animation->getTotalTicksCount());
+    currentTick = fmodf(newTickValue, animation->getTotalTicksCount());
 
     updateBones(skeleton->getRootNode(), static_cast<int>(currentTick));
 }
