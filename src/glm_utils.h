@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 #include "assimp/matrix4x4.h"
 
 namespace glm {

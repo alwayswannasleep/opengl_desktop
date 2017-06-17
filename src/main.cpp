@@ -9,6 +9,7 @@
 #include "assimp/Importer.hpp"
 #include "actors/Model.h"
 #include "actors/Cube.h"
+#include "actors/ScreenPlane.h"
 
 #define DEFAULT_FPS_TARGET 60
 #define ICONIFIED_FPS_TARGET 5
@@ -69,7 +70,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    auto window = glfwCreateWindow(800, 600, "OpenGL test", NULL, NULL);
+    auto window = glfwCreateWindow(1600, 900, "OpenGL test", NULL, NULL);
 
     if (window == NULL) {
         LOGM("Can not create glfw window!");
@@ -111,17 +112,52 @@ int main() {
 
     Cube cube;
     cube.setScale(100, 0.001, 100);
+    cube.setCamera(&camera);
     cube.setPosition(glm::vec3(0, 0, 0));
     model = new Model();
+    model->setCamera(&camera);
     model->initialize("../resources/caster/caster.fbx");
     model->setScale(0.1, 0.1, 0.1);
 
     Model sphere;
-    sphere.initialize("../resources/sphere.obj");
+    sphere.initialize("../resources/monkey.fbx");
+    sphere.setCamera(&camera);
+    sphere.setRotation(-90, 0, 0);
     sphere.setScale(5, 5, 5);
     sphere.setPosition(glm::vec3(10, 10, 0));
 
-    perspective = glm::perspective<float>(45, 800 / 600, 0.01f, 1000);
+    ScreenPlane screen;
+
+    perspective = glm::perspective<float>(45, 16.f / 9.f, 0.01f, 1000);
+
+    GLuint hdrTexture;
+    glGenTextures(1, &hdrTexture);
+    glBindTexture(GL_TEXTURE_2D, hdrTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1600, 900, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    GLuint hdrFrameBuffer;
+    glGenFramebuffers(1, &hdrFrameBuffer);
+
+    GLuint renderBuffer;
+    glGenRenderbuffers(1, &renderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1600, 900);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFrameBuffer);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrTexture, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        LOGM("Error, cannot create frameBuffer.");
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &hdrFrameBuffer);
+        return -1;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     int fps = 0;
     auto start = getCurrentTime();
@@ -135,22 +171,33 @@ int main() {
 
         updateMovements(delta);
 
-        glClearColor(0.4f, 0.4f, 0.4f, 1);
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFrameBuffer);
+        {
+            glClearColor(0.4f, 0.4f, 0.4f, 1);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            auto projectionViewMatrix = perspective * camera.getViewMatrix();
+
+            cube.update(projectionViewMatrix, delta);
+            cube.render();
+
+            sphere.update(projectionViewMatrix, delta);
+            sphere.render();
+
+            model->update(projectionViewMatrix, delta);
+            model->render();
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto projectionViewMatrix = perspective * camera.getViewMatrix();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hdrTexture);
+        screen.render();
 
-        cube.update(projectionViewMatrix, delta);
-        cube.render();
-
-        sphere.update(projectionViewMatrix, delta);
-        sphere.render();
-
-        model->update(projectionViewMatrix, delta);
-        model->render();
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         glfwSwapBuffers(window);
-
         fps++;
 
         auto frameEnd = getCurrentTime();

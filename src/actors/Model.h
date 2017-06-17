@@ -74,7 +74,7 @@ class Model : public Actor {
 public:
     Model() : Actor("../shaders/model_vertex_shader.glsl", "../shaders/model_fragment_shader.glsl") {}
 
-    void initialize(const char *path);
+    virtual void initialize(const char *path);
 
     void update(glm::mat4 &transformationMatrix, float deltaTime) override;
 

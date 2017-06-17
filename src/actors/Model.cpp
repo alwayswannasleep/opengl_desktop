@@ -366,16 +366,23 @@ void Model::initializeMaterials(const std::string &modelFile) {
 void Model::render() {
     Actor::render();
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
     program->use();
 
     for (auto node : nodes) {
         auto meshes = node.meshes;
         for (auto mesh : meshes) {
             glUniformMatrix4fv(program->getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+            glUniformMatrix4fv(program->getUniformLocation("projectionViewMatrix"), 1, GL_FALSE,
+                               glm::value_ptr(projectionViewMatrix));
+            glUniform3fv(program->getUniformLocation("cameraPosition"), 1, glm::value_ptr(camera->getPosition()));
+
             auto matrices = mesh.getBonesMatrices();
 
             for (auto i = 0; i < matrices.size(); i++) {
-                auto matrix = matrices.at(i);
+                auto matrix = matrices.at(static_cast<size_t>(i));
                 char n[128];
                 sprintf(n, "%s[%d]", "bonesMatrices", i);
 

@@ -1,6 +1,7 @@
 #version 330 core
 
 uniform mat4 modelMatrix;
+uniform mat4 projectionViewMatrix;
 uniform bool hasBones;
 uniform mat4[60] bonesMatrices;
 
@@ -11,6 +12,8 @@ layout (location = 3) in vec4 inBonesIndeces;
 layout (location = 4) in vec4 inBonesWeights;
 
 out vec2 textureCoordinates;
+out vec3 normal;
+out vec3 fragmentPosition;
 
 void main() {
     vec4 transformedPosition = vec4(0.0);
@@ -30,6 +33,8 @@ void main() {
         transformedPosition = finalModelMatrix * vec4(inPosition, 1.0);
     }
 
+    normal = normalize(mat3(transpose(inverse(finalModelMatrix))) * inNormal);
+    fragmentPosition = transformedPosition.xyz;
     textureCoordinates = inTextureCoordinates;
-    gl_Position = transformedPosition;
+    gl_Position = projectionViewMatrix * transformedPosition;
 }

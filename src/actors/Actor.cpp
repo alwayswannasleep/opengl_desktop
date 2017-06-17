@@ -17,7 +17,8 @@ Actor::~Actor() {
 }
 
 void Actor::update(glm::mat4 &transformationMatrix, float deltaTime) {
-    modelMatrix = transformationMatrix * translationMatrix * scaleMatrix * rotationMatrix;
+    projectionViewMatrix = transformationMatrix;
+    modelMatrix = translationMatrix * scaleMatrix * rotationMatrix;
 
     for (auto child : children) {
         child->update(modelMatrix, deltaTime);
@@ -56,6 +57,10 @@ void Actor::setScale(float x, float y, float z) {
 
 glm::vec3 Actor::getPosition() {
     return glm::vec3();
+}
+
+void Actor::setCamera(Camera *camera) {
+    this->camera = camera;
 }
 
 void Actor::release() {

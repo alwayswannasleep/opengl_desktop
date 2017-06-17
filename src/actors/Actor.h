@@ -4,6 +4,7 @@
 #include "../glwrapper.h"
 #include "glm/glm.hpp"
 #include "../Program.h"
+#include "../Camera.h"
 #include <vector>
 
 class Actor {
@@ -25,6 +26,8 @@ public:
 
     glm::vec3 getPosition();
 
+    void setCamera(Camera *camera);
+
     virtual void release();
 
 protected:
@@ -36,6 +39,9 @@ protected:
 protected:
 
     Program *program;
+    Camera *camera;
+
+    glm::mat4 projectionViewMatrix;
     glm::mat4 modelMatrix;
     std::vector<Actor *> children;
     glm::vec3 position;

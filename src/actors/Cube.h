@@ -1,22 +1,15 @@
 #ifndef OPENGL_CUBE_H
 #define OPENGL_CUBE_H
 
-#include "Actor.h"
+#include "Model.h"
 
-class Cube : public Actor {
-private:
-    static const GLfloat VERTICES[];
-    static const GLuint INDEXES[];
+class Cube : public Model {
 
 public:
     Cube();
 
-    void render() override;
-
-private:
-    GLuint vao;
-    GLuint vbo;
-    GLuint ebo;
+protected:
+    void initialize(const char *path) override;
 };
 
 
