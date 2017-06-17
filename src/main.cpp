@@ -119,6 +119,12 @@ int main() {
     model->initialize("../resources/caster/caster.fbx");
     model->setScale(0.1, 0.1, 0.1);
 
+    Model shark;
+    shark.initialize("../resources/shark/shark.fbx");
+    shark.setCamera(&camera);
+    shark.setPosition(glm::vec3(-30, 10, 0));
+    shark.setScale(0.09, 0.09, 0.09);
+
     Model sphere;
     sphere.initialize("../resources/monkey.fbx");
     sphere.setCamera(&camera);
@@ -186,6 +192,9 @@ int main() {
 
             model->update(projectionViewMatrix, delta);
             model->render();
+
+            shark.update(projectionViewMatrix, delta);
+            shark.render();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
