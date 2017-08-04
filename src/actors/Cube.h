@@ -8,8 +8,14 @@ class Cube : public Model {
 public:
     Cube();
 
+    void render() override;
+
 protected:
     void initialize(const char *path) override;
+
+private:
+
+    Texture *texture;
 };
 
 

@@ -9,5 +9,3 @@ newmtl cube
   Kd 0.5880 0.5880 0.5880
   Ks 0.0000 0.0000 0.0000
   Ke 0.0000 0.0000 0.0000
-  map_Ka texture.jpg
-  map_Kd texture.jpg

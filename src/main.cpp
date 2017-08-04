@@ -6,7 +6,6 @@
 #include "Camera.h"
 #include "actors/Actor.h"
 #include "logs.h"
-#include "assimp/Importer.hpp"
 #include "actors/Model.h"
 #include "actors/Cube.h"
 #include "actors/ScreenPlane.h"
@@ -92,12 +91,13 @@ int main() {
     }
 #endif
 
-    glViewport(0, 0, width, height);
     glfwSetFramebufferSizeCallback(window, onWindowSizeChanged);
 
     glfwSetKeyCallback(window, onKeyPressed);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, onCursorPositionChanged);
+
+    glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
@@ -113,11 +113,11 @@ int main() {
     Cube cube;
     cube.setScale(100, 0.001, 100);
     cube.setCamera(&camera);
-    cube.setPosition(glm::vec3(0, 0, 0));
+    cube.setPosition(glm::vec3(200, 0, 0));
     model = new Model();
     model->setCamera(&camera);
     model->initialize("../resources/caster/caster.fbx");
-    model->setScale(0.1, 0.1, 0.1);
+    model->setScale(011, 0.11, 0.11);
 
     Model shark;
     shark.initialize("../resources/shark/shark.fbx");
@@ -131,6 +131,8 @@ int main() {
     sphere.setRotation(-90, 0, 0);
     sphere.setScale(5, 5, 5);
     sphere.setPosition(glm::vec3(10, 10, 0));
+
+    cube.addChild(*model);
 
     ScreenPlane screen;
 
@@ -189,9 +191,6 @@ int main() {
 
             sphere.update(projectionViewMatrix, delta);
             sphere.render();
-
-            model->update(projectionViewMatrix, delta);
-            model->render();
 
             shark.update(projectionViewMatrix, delta);
             shark.render();
