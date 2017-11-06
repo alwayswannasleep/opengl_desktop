@@ -108,31 +108,18 @@ int main() {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    camera.setPosition(glm::vec3(0, 2, 4));
+    camera.setPosition(glm::vec3(0, 50, 0));
+    camera.setFront(glm::vec3(0, -1, 0));
 
     Cube cube;
     cube.setScale(100, 0.001, 100);
     cube.setCamera(&camera);
-    cube.setPosition(glm::vec3(200, 0, 0));
+
     model = new Model();
     model->setCamera(&camera);
-    model->initialize("../resources/caster/caster.fbx");
-    model->setScale(011, 0.11, 0.11);
-
-    Model shark;
-    shark.initialize("../resources/shark/shark.fbx");
-    shark.setCamera(&camera);
-    shark.setPosition(glm::vec3(-30, 10, 0));
-    shark.setScale(0.09, 0.09, 0.09);
-
-    Model sphere;
-    sphere.initialize("../resources/monkey.fbx");
-    sphere.setCamera(&camera);
-    sphere.setRotation(-90, 0, 0);
-    sphere.setScale(5, 5, 5);
-    sphere.setPosition(glm::vec3(10, 10, 0));
-
-    cube.addChild(*model);
+    model->initialize("../resources/skate/D_SkateJump_.fbx");
+    model->setRotation(90, 0, 0);
+//    model->setScale(0.11, 0.11, 0.11);
 
     ScreenPlane screen;
 
@@ -186,14 +173,8 @@ int main() {
 
             auto projectionViewMatrix = perspective * camera.getViewMatrix();
 
-            cube.update(projectionViewMatrix, delta);
-            cube.render();
-
-            sphere.update(projectionViewMatrix, delta);
-            sphere.render();
-
-            shark.update(projectionViewMatrix, delta);
-            shark.render();
+            model->update(projectionViewMatrix, delta);
+            model->render();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

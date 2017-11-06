@@ -34,7 +34,7 @@ endif()
 link_directories(third_party/glfw/lib/${LIBRARIES_DIRECTORY})
 link_directories(third_party/assimp/lib/${LIBRARIES_DIRECTORY})
 
-link_libraries(assimp)
+link_libraries(assimpd)
 
 add_library(stb_image third_party/stb_image/stb_image.cpp)
 

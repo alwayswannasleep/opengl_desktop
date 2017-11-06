@@ -73,6 +73,8 @@ void Animation::initialize(const aiAnimation *animation) {
         }
 
         LOGI("\nAnimation: initialized '%s' \n\n", channelName.c_str());
+        LOGI("Animation: post state '%d' \n", channel->mPostState);
+        LOGI("Animation: pre state '%d' \n", channel->mPreState);
         LOGI("Animation: initialized scaling count %ld\n", scalingIndexes.at(channelName).size());
         LOGI("Animation: initialized rotation count %ld\n", rotationIndexes.at(channelName).size());
         LOGI("Animation: initialized translation count %ld\n", translationsIndexes.at(channelName).size());

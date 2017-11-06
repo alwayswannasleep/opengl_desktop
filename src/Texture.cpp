@@ -21,6 +21,10 @@ bool Texture::load(void *compressedData, GLuint length) {
     int height;
     int channels;
 
+    if (compressedData == NULL) {
+        return false;
+    }
+
     void *data = stbi_load_from_memory(static_cast<stbi_uc *>(compressedData), length, &width, &height, &channels, 0);
 
     if (data == NULL) {
