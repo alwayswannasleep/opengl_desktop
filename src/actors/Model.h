@@ -72,7 +72,8 @@ class Model : public Actor {
     };
 
 public:
-    Model() : Actor("../shaders/model_vertex_shader.glsl", "../shaders/model_fragment_shader.glsl") {}
+    Model() : Actor("resources/shaders/model_vertex_shader.glsl", "resources/shaders/model_fragment_shader.glsl"),
+              scene(NULL) {}
 
     virtual void initialize(const char *path);
 

@@ -15,12 +15,16 @@ include_directories(
         third_party/stb_image
 )
 
+SET(ASSIMP_LIBRARY assimp)
+
 if (${APPLE})
     SET(GLFW-lib glfw)
     SET(LIBRARIES_DIRECTORY macos)
 
+    SET(ASSIMP_LIBRARY assimpd)
+
     add_definitions(-DOS_APPLE)
-elseif(${WIN32})
+elseif (${WIN32})
     SET(LIBRARIES_DIRECTORY win)
 
     SET(GLFW-lib glfw3)
@@ -29,12 +33,10 @@ elseif(${WIN32})
     link_directories(third_party/glew/lib/)
     link_libraries(glew32)
     add_definitions(-DGLEW_STATIC -DOS_WINDOWS)
-endif()
+endif ()
 
 link_directories(third_party/glfw/lib/${LIBRARIES_DIRECTORY})
 link_directories(third_party/assimp/lib/${LIBRARIES_DIRECTORY})
-
-link_libraries(assimpd)
 
 add_library(stb_image third_party/stb_image/stb_image.cpp)
 
@@ -42,7 +44,10 @@ file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.h)
 add_executable(opengl ${SOURCE_FILES})
 target_link_libraries(
         opengl
+        ${ASSIMP_LIBRARY}
         stb_image
         ${GLFW-lib}
         ${OPENGL_LIBRARY}
 )
+
+file(COPY resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

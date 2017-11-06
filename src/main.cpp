@@ -117,7 +117,7 @@ int main() {
 
     model = new Model();
     model->setCamera(&camera);
-    model->initialize("../resources/skate/D_SkateJump_.fbx");
+    model->initialize("resources/models/brute/jump_attack.fbx");
     model->setRotation(90, 0, 0);
 //    model->setScale(0.11, 0.11, 0.11);
 

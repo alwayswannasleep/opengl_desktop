@@ -11,7 +11,7 @@ const float ScreenPlane::VERTICES[] = {
         1.0f, 1.0f, 1.0f, 1.0f
 };
 
-ScreenPlane::ScreenPlane() : Actor("../shaders/vertex_shader.glsl", "../shaders/fragment_shader.glsl") {
+ScreenPlane::ScreenPlane() : Actor("resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl") {
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
     glBindVertexArray(vertexArrayObject);
